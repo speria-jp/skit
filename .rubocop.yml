@@ -1,0 +1,98 @@
+plugins:
+  - rubocop-sorbet
+  - rubocop-rake
+  - rubocop-rspec
+
+AllCops:
+  TargetRubyVersion: 3.2
+  NewCops: enable
+  Exclude:
+    - "vendor/**/*"
+    - "sorbet/**/*"
+    - "coverage/**/*"
+    - "tmp/**/*"
+    - "bin/**/*"
+
+# Sorbet specific cops
+Sorbet/ForbidIncludeConstLiteral:
+  Enabled: true
+
+Sorbet/SignatureBuildOrder:
+  Enabled: true
+
+# Style preferences
+Style/StringLiterals:
+  Enabled: true
+  EnforcedStyle: double_quotes
+
+Style/StringLiteralsInInterpolation:
+  Enabled: true
+  EnforcedStyle: double_quotes
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always
+
+Style/Documentation:
+  Enabled: false
+
+Style/ArgumentsForwarding:
+  Enabled: false
+
+# Layout preferences
+Layout/LineLength:
+  Max: 120
+  Exclude:
+    - "**/*.gemspec"
+
+Layout/EmptyLinesAroundAttributeAccessor:
+  Enabled: true
+
+Layout/SpaceAroundMethodCallOperator:
+  Enabled: true
+
+# Metrics
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+# RSpec specific
+RSpec/MultipleExpectations:
+  Enabled: false
+
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Enabled: false
+
+RSpec/NestedGroups:
+  Max: 5
+
+Style/MultilineBlockChain:
+  Exclude:
+    - "spec/**/*"
+
+# Naming
+Naming/FileName:
+  Exclude:
+    - "Gemfile"
+    - "Rakefile"
+
+# Gemspec
+Gemspec/DevelopmentDependencies:
+  Enabled: false

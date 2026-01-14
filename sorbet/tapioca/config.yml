@@ -1,0 +1,16 @@
+gem:
+  exclude:
+    - rubocop
+    - rubocop-rake
+    - rubocop-rspec
+    - rubocop-sorbet
+    - yard-sorbet
+    - rspec
+    - rspec-core
+    - rspec-expectations
+    - rspec-mocks
+    - rspec-support
+    - prism
+    - spoom
+    - tapioca
+dsl:
