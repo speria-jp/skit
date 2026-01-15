@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "skit"
+
+if ARGV.empty? || ARGV[0] == "--help" || ARGV[0] == "-h"
+  puts "Usage: skit <command> [options]"
+  puts ""
+  puts "Commands:"
+  puts "  generate    Generate Sorbet T::Struct from JSON Schema"
+  puts ""
+  puts "Run 'skit <command> --help' for more information on a command."
+  exit 0
+end
+
+if ["--version", "-v"].include?(ARGV[0])
+  puts "skit #{Skit::VERSION}"
+  exit 0
+end
+
+command = ARGV.shift
+
+case command
+when "generate"
+  cli = Skit::JsonSchema::CLI.new
+  exit cli.run(ARGV)
+else
+  warn "Unknown command: #{command}"
+  warn "Run 'skit --help' for usage information."
+  exit 1
+end
