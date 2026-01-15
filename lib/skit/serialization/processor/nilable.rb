@@ -39,6 +39,22 @@ module Skit
           processor.deserialize(value)
         end
 
+        sig do
+          override.params(
+            value: T.untyped,
+            path: ::String,
+            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: ::String).void
+          ).void
+        end
+        def traverse(value, path: "", &blk)
+          super
+
+          return if value.nil?
+
+          processor = @registry.processor_for(@inner_type)
+          processor.traverse(value, path: path, &blk)
+        end
+
         class << self
           extend T::Sig
 

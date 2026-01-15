@@ -55,6 +55,27 @@ module Skit
 
           @struct_class.new(**deserialized)
         end
+
+        sig do
+          override.params(
+            value: T.untyped,
+            path: ::String,
+            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: ::String).void
+          ).void
+        end
+        def traverse(value, path: "", &blk)
+          super
+
+          return unless value.is_a?(@struct_class)
+
+          @struct_class.props.each do |name, prop_def|
+            prop_value = value.public_send(name)
+            prop_type = prop_def[:type_object]
+            processor = @registry.processor_for(prop_type)
+            prop_path = path.empty? ? name.to_s : "#{path}.#{name}"
+            processor.traverse(prop_value, path: prop_path, &blk)
+          end
+        end
       end
     end
   end

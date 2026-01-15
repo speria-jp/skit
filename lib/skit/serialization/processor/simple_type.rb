@@ -33,6 +33,18 @@ module Skit
           processor = @registry.processor_for(@raw_type)
           processor.deserialize(value)
         end
+
+        sig do
+          override.params(
+            value: T.untyped,
+            path: ::String,
+            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: ::String).void
+          ).void
+        end
+        def traverse(value, path: "", &blk)
+          processor = @registry.processor_for(@raw_type)
+          processor.traverse(value, path: path, &blk)
+        end
       end
     end
   end

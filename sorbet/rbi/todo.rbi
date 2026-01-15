@@ -4,14 +4,9 @@
 
 # typed: false
 
-module ::DateAndTime::Calculations; end
-module ::DateAndTime::Zones; end
+module ::Concurrent::Map; end
 module ::Tapioca::SourceURI; end
-module ActiveModel::Error; end
 module ActiveRecord::ConnectionAdapters::DatabaseStatements; end
 module ActiveRecord::ConnectionAdapters::SchemaStatements; end
-module ActiveSupport::ArrayInquirer; end
-module ActiveSupport::Multibyte::Chars; end
-module ActiveSupport::SafeBuffer; end
-module ActiveSupport::StringInquirer; end
-module ActiveSupport::TimeZone; end
+class Minitest::Assertion < StandardError; end
+class Minitest::Test; end

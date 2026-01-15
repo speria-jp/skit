@@ -41,6 +41,25 @@ module Skit
             processor.deserialize(item)
           end
         end
+
+        sig do
+          override.params(
+            value: T.untyped,
+            path: ::String,
+            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: ::String).void
+          ).void
+        end
+        def traverse(value, path: "", &blk)
+          super
+
+          return unless value.is_a?(::Array)
+
+          value.each_with_index do |item, index|
+            processor = @registry.processor_for(@element_type)
+            item_path = "#{path}[#{index}]"
+            processor.traverse(item, path: item_path, &blk)
+          end
+        end
       end
     end
   end

@@ -5,6 +5,8 @@ require "sorbet-runtime"
 
 require_relative "skit/version"
 require_relative "skit/serialization"
+require_relative "skit/attribute"
+require_relative "active_model/validations/skit_validator"
 
 module Skit
   extend T::Sig
