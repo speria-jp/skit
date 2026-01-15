@@ -1,0 +1,33 @@
+name: Publish to RubyGems
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+
+      - name: Run tests
+        run: bundle exec rake
+
+      - name: Build gem
+        run: gem build skit.gemspec
+
+      - name: Publish to RubyGems
+        uses: rubygems/release-gem@v1
