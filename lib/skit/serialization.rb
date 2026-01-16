@@ -19,6 +19,7 @@ require_relative "serialization/processor/array"
 require_relative "serialization/processor/hash"
 require_relative "serialization/processor/nilable"
 require_relative "serialization/processor/union"
+require_relative "serialization/processor/json_schema_const"
 
 module Skit
   module Serialization
@@ -38,6 +39,7 @@ module Skit
       registry.register(Processor::Union)
       registry.register(Processor::Array)
       registry.register(Processor::Hash)
+      registry.register(Processor::JsonSchemaConst)
       registry.register(Processor::Struct)
       registry.register(Processor::SimpleType)
       registry.register(Processor::Date)

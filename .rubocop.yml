@@ -100,3 +100,8 @@ Gemspec/DevelopmentDependencies:
 # RBS-style comments (#:) should not have space after #
 Layout/LeadingCommentSpace:
   AllowRBSInlineAnnotation: true
+
+# Tapioca DSL compilers need typed: ignore because they use runtime-only APIs
+Sorbet/FalseSigil:
+  Exclude:
+    - "lib/tapioca/**/*"

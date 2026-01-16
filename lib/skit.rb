@@ -4,6 +4,8 @@
 require "sorbet-runtime"
 
 require_relative "skit/version"
+# Load JsonSchema::Types::Const early so it can be used by serialization processors
+require_relative "skit/json_schema/types/const"
 require_relative "skit/serialization"
 require_relative "skit/attribute"
 require_relative "skit/json_schema"
