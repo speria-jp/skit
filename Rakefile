@@ -8,7 +8,13 @@ require "rubocop/rake_task"
 RSpec::Core::RakeTask.new(:spec)
 RuboCop::RakeTask.new
 
-task default: %i[rubocop spec]
+desc "Run Sorbet type checker"
+task :typecheck do
+  puts "Running Sorbet type check..."
+  system("bundle exec srb tc") || abort("Sorbet type check failed")
+end
+
+task default: %i[rubocop spec typecheck]
 
 namespace :sorbet do
   desc "Update all Tapioca RBI files (gems, annotations, dsl)"
