@@ -96,3 +96,7 @@ Naming/FileName:
 # Gemspec
 Gemspec/DevelopmentDependencies:
   Enabled: false
+
+# RBS-style comments (#:) should not have space after #
+Layout/LeadingCommentSpace:
+  AllowRBSInlineAnnotation: true
