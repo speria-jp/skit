@@ -295,5 +295,115 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
         expect(result).to include('VALUE = "cat"')
       end
     end
+
+    context "with enum types" do
+      let(:enum_type) do
+        Skit::JsonSchema::Definitions::EnumType.new(
+          class_name: "Status",
+          values: %w[active inactive pending]
+        )
+      end
+
+      let(:struct_def) do
+        Skit::JsonSchema::Definitions::Struct.new(
+          class_name: "User",
+          properties: [
+            Skit::JsonSchema::Definitions::StructProperty.new(
+              name: "status",
+              type: enum_type
+            )
+          ],
+          enum_types: [enum_type]
+        )
+      end
+
+      it "generates T::Enum class with enums block" do
+        generator = described_class.new(struct_def, config)
+        result = generator.generate
+
+        expect(result).to include("class Status < T::Enum")
+        expect(result).to include("enums do")
+        expect(result).to include('Active = new("active")')
+        expect(result).to include('Inactive = new("inactive")')
+        expect(result).to include('Pending = new("pending")')
+      end
+
+      it "generates enum class before main struct" do
+        generator = described_class.new(struct_def, config)
+        result = generator.generate
+
+        enum_pos = result.index("class Status < T::Enum")
+        struct_pos = result.index("class User < T::Struct")
+        expect(enum_pos).to be < struct_pos
+      end
+
+      it "uses enum type in struct property" do
+        generator = described_class.new(struct_def, config)
+        result = generator.generate
+
+        expect(result).to include("prop :status, Status")
+      end
+    end
+
+    context "with integer enum type" do
+      let(:enum_type) do
+        Skit::JsonSchema::Definitions::EnumType.new(
+          class_name: "Priority",
+          values: [1, 2, 3]
+        )
+      end
+
+      let(:struct_def) do
+        Skit::JsonSchema::Definitions::Struct.new(
+          class_name: "Task",
+          properties: [
+            Skit::JsonSchema::Definitions::StructProperty.new(
+              name: "priority",
+              type: enum_type
+            )
+          ],
+          enum_types: [enum_type]
+        )
+      end
+
+      it "generates T::Enum with integer values" do
+        generator = described_class.new(struct_def, config)
+        result = generator.generate
+
+        expect(result).to include("class Priority < T::Enum")
+        expect(result).to include("Val1 = new(1)")
+        expect(result).to include("Val2 = new(2)")
+        expect(result).to include("Val3 = new(3)")
+      end
+    end
+
+    context "with enum types in module" do
+      let(:module_config) { Skit::JsonSchema::Config.new(module_name: "MyModule", typed_strictness: "strict") }
+
+      let(:enum_type) do
+        Skit::JsonSchema::Definitions::EnumType.new(
+          class_name: "Status",
+          values: %w[active inactive]
+        )
+      end
+
+      let(:struct_def) do
+        Skit::JsonSchema::Definitions::Struct.new(
+          class_name: "User",
+          properties: [],
+          enum_types: [enum_type]
+        )
+      end
+
+      it "wraps enum class in module" do
+        generator = described_class.new(struct_def, module_config)
+        result = generator.generate
+
+        expect(result).to include("module MyModule")
+        expect(result).to include("  class Status < T::Enum")
+        expect(result).to include("    enums do")
+        expect(result).to include('      Active = new("active")')
+      end
+    end
   end
 end

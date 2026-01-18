@@ -20,6 +20,7 @@ require_relative "serialization/processor/hash"
 require_relative "serialization/processor/nilable"
 require_relative "serialization/processor/union"
 require_relative "serialization/processor/json_schema_const"
+require_relative "serialization/processor/enum"
 
 module Skit
   module Serialization
@@ -40,6 +41,7 @@ module Skit
       registry.register(Processor::Array)
       registry.register(Processor::Hash)
       registry.register(Processor::JsonSchemaConst)
+      registry.register(Processor::Enum)
       registry.register(Processor::Struct)
       registry.register(Processor::SimpleType)
       registry.register(Processor::Date)

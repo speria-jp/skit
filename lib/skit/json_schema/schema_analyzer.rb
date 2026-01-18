@@ -14,6 +14,7 @@ module Skit
         @schemer = T.let(JSONSchemer.schema(@schema), T.untyped)
         @nested_structs = T.let({}, T::Hash[String, Definitions::Struct])
         @const_types = T.let({}, T::Hash[String, Definitions::ConstType])
+        @enum_types = T.let({}, T::Hash[String, Definitions::EnumType])
         @config = config
         @ref_stack = T.let([], T::Array[String])
       end
@@ -98,6 +99,7 @@ module Skit
           properties: properties,
           nested_structs: @nested_structs.values,
           const_types: @const_types.values,
+          enum_types: @enum_types.values,
           description: schema["description"]
         )
       end
@@ -124,6 +126,9 @@ module Skit
 
         # Const type processing
         return build_const_type(schema, class_name_path) if schema.key?("const")
+
+        # Enum type processing
+        return build_enum_type(schema, class_name_path) if schema.key?("enum")
 
         # Union type processing
         return build_union_type(schema, class_name_path) if schema["anyOf"] || schema["oneOf"]
@@ -256,6 +261,63 @@ module Skit
         "#{property_name}#{value_suffix}"
       end
 
+      sig { params(schema: T::Hash[String, T.untyped], class_name_path: ClassNamePath).returns(Definitions::PropertyTypes) }
+      def build_enum_type(schema, class_name_path)
+        enum_values = T.cast(schema["enum"], T::Array[T.untyped])
+
+        # Filter and validate enum values
+        valid_values = enum_values.select { |v| valid_enum_value?(v) }
+
+        # If no valid values or mixed types that can't be handled, fallback to T.untyped
+        return Definitions::PropertyType.new(base_type: "T.untyped") if valid_values.empty?
+
+        # Check if all values are of the same type category (all strings, all numbers, etc.)
+        return Definitions::PropertyType.new(base_type: "T.untyped") unless homogeneous_enum_values?(valid_values)
+
+        # Generate class name from property name
+        class_name = class_name_path.property_name
+
+        enum_type = Definitions::EnumType.new(
+          class_name: class_name,
+          values: valid_values
+        )
+
+        # Store enum type definition (dedup by class name)
+        @enum_types[class_name] = enum_type unless @enum_types.key?(class_name)
+
+        enum_type
+      end
+
+      sig { params(value: T.untyped).returns(T::Boolean) }
+      def valid_enum_value?(value)
+        case value
+        when String, Integer, Float
+          true
+        else
+          false
+        end
+      end
+
+      sig { params(values: T::Array[T.untyped]).returns(T::Boolean) }
+      def homogeneous_enum_values?(values)
+        return true if values.empty?
+
+        first_type = value_type_category(values.first)
+        values.all? { |v| value_type_category(v) == first_type }
+      end
+
+      sig { params(value: T.untyped).returns(Symbol) }
+      def value_type_category(value)
+        case value
+        when String
+          :string
+        when Integer, Float
+          :number
+        else
+          :other
+        end
+      end
+
       sig { params(schema: T::Hash[String, T.untyped], class_name_path: ClassNamePath).returns(Definitions::ArrayPropertyType) }
       def build_array_type(schema, class_name_path)
         if schema["items"]
@@ -330,6 +392,12 @@ module Skit
           Definitions::ConstType.new(
             class_name: property_type.class_name,
             value: property_type.value,
+            nullable: true
+          )
+        when Definitions::EnumType
+          Definitions::EnumType.new(
+            class_name: property_type.class_name,
+            values: property_type.values,
             nullable: true
           )
         when Definitions::PropertyType

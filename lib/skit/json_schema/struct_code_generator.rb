@@ -34,7 +34,13 @@ module Skit
             parts << "#{"  " * index}module #{module_part}"
           end
 
-          # Const types first (within module)
+          # Enum types first (within module)
+          @struct_definition.enum_types.each do |enum_type|
+            parts << ""
+            parts << generate_enum_class(enum_type, module_parts.length)
+          end
+
+          # Const types (within module)
           @struct_definition.const_types.each do |const_type|
             parts << ""
             parts << generate_const_class(const_type, module_parts.length)
@@ -55,7 +61,13 @@ module Skit
             parts << "#{"  " * (module_parts.length - index - 1)}end"
           end
         else
-          # Const types first
+          # Enum types first
+          @struct_definition.enum_types.each do |enum_type|
+            parts << ""
+            parts << generate_enum_class(enum_type)
+          end
+
+          # Const types
           @struct_definition.const_types.each do |const_type|
             parts << ""
             parts << generate_const_class(const_type)
@@ -80,6 +92,26 @@ module Skit
       sig { returns(T::Boolean) }
       def const_types?
         !@struct_definition.const_types.empty?
+      end
+
+      sig { params(enum_type: Definitions::EnumType, indent_level: Integer).returns(String) }
+      def generate_enum_class(enum_type, indent_level = 0)
+        lines = []
+        base_indent = "  " * indent_level
+
+        lines << "#{base_indent}class #{enum_type.class_name} < T::Enum"
+        lines << "#{base_indent}  enums do"
+
+        enum_type.values.each do |value| # rubocop:disable Style/HashEachMethods
+          member_name = Definitions::EnumType.value_to_member_name(value)
+          value_literal = Definitions::EnumType.value_literal(value)
+          lines << "#{base_indent}    #{member_name} = new(#{value_literal})"
+        end
+
+        lines << "#{base_indent}  end"
+        lines << "#{base_indent}end"
+
+        lines.join("\n")
       end
 
       sig { params(const_type: Definitions::ConstType, indent_level: Integer).returns(String) }

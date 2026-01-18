@@ -545,6 +545,169 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
     end
   end
 
+  describe "enum type support" do
+    context "with string enum" do
+      let(:schema) do
+        {
+          "type" => "object",
+          "properties" => {
+            "status" => {
+              "type" => "string",
+              "enum" => %w[active inactive pending]
+            }
+          },
+          "required" => ["status"]
+        }
+      end
+
+      it "creates EnumType for enum property" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        status_prop = result.properties.find { |p| p.name == "status" }
+        expect(status_prop.type).to be_a(Skit::JsonSchema::Definitions::EnumType)
+        expect(status_prop.type.class_name).to eq("Status")
+        expect(status_prop.type.values).to eq(%w[active inactive pending])
+        expect(status_prop.type.to_sorbet_type).to eq("Status")
+      end
+
+      it "stores enum type in enum_types array" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        expect(result.enum_types.length).to eq(1)
+        enum_type = result.enum_types.first
+        expect(enum_type.class_name).to eq("Status")
+        expect(enum_type.values).to eq(%w[active inactive pending])
+      end
+    end
+
+    context "with integer enum" do
+      let(:schema) do
+        {
+          "type" => "object",
+          "properties" => {
+            "priority" => {
+              "type" => "integer",
+              "enum" => [1, 2, 3]
+            }
+          },
+          "required" => ["priority"]
+        }
+      end
+
+      it "creates EnumType for integer enum" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        priority_prop = result.properties.find { |p| p.name == "priority" }
+        expect(priority_prop.type).to be_a(Skit::JsonSchema::Definitions::EnumType)
+        expect(priority_prop.type.class_name).to eq("Priority")
+        expect(priority_prop.type.values).to eq([1, 2, 3])
+      end
+    end
+
+    context "with optional enum property" do
+      let(:schema) do
+        {
+          "type" => "object",
+          "properties" => {
+            "status" => {
+              "type" => "string",
+              "enum" => %w[active inactive]
+            }
+          }
+        }
+      end
+
+      it "creates nullable EnumType when not required" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        status_prop = result.properties.find { |p| p.name == "status" }
+        expect(status_prop.type).to be_a(Skit::JsonSchema::Definitions::EnumType)
+        expect(status_prop.type.nullable).to be(true)
+        expect(status_prop.type.to_sorbet_type).to eq("T.nilable(Status)")
+      end
+    end
+
+    context "with mixed type enum" do
+      let(:schema) do
+        {
+          "type" => "object",
+          "properties" => {
+            "value" => {
+              "enum" => ["active", 1, 2.5]
+            }
+          }
+        }
+      end
+
+      it "falls back to T.untyped for mixed type enum" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        value_prop = result.properties.find { |p| p.name == "value" }
+        expect(value_prop.type).to be_a(Skit::JsonSchema::Definitions::PropertyType)
+        expect(value_prop.type.to_sorbet_type).to eq("T.nilable(T.untyped)")
+      end
+    end
+
+    context "with unsupported enum values" do
+      let(:schema) do
+        {
+          "type" => "object",
+          "properties" => {
+            "data" => {
+              "enum" => [nil, true, false]
+            }
+          }
+        }
+      end
+
+      it "falls back to T.untyped when all values are unsupported" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        data_prop = result.properties.find { |p| p.name == "data" }
+        expect(data_prop.type).to be_a(Skit::JsonSchema::Definitions::PropertyType)
+        expect(data_prop.type.to_sorbet_type).to eq("T.nilable(T.untyped)")
+      end
+    end
+
+    context "with multiple enum properties" do
+      let(:schema) do
+        {
+          "type" => "object",
+          "properties" => {
+            "status" => {
+              "type" => "string",
+              "enum" => %w[active inactive]
+            },
+            "priority" => {
+              "type" => "integer",
+              "enum" => [1, 2, 3]
+            }
+          },
+          "required" => %w[status priority]
+        }
+      end
+
+      it "creates multiple EnumTypes" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        expect(result.enum_types.length).to eq(2)
+
+        status_prop = result.properties.find { |p| p.name == "status" }
+        expect(status_prop.type.class_name).to eq("Status")
+
+        priority_prop = result.properties.find { |p| p.name == "priority" }
+        expect(priority_prop.type.class_name).to eq("Priority")
+      end
+    end
+  end
+
   describe "title support" do
     context "with CLI class name specified" do
       let(:schema) do

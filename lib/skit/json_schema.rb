@@ -4,6 +4,7 @@
 require_relative "json_schema/types/const"
 require_relative "json_schema/definitions/property_type"
 require_relative "json_schema/definitions/const_type"
+require_relative "json_schema/definitions/enum_type"
 require_relative "json_schema/definitions/property_types"
 require_relative "json_schema/definitions/array_property_type"
 require_relative "json_schema/definitions/hash_property_type"
