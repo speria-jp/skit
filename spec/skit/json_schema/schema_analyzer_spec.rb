@@ -370,7 +370,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
       end
     end
 
-    context "with complex object union (unsupported)" do
+    context "with oneOf containing multiple objects" do
       let(:schema) do
         {
           "type" => "object",
@@ -392,13 +392,22 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         }
       end
 
-      it "falls back to T.untyped" do
+      it "generates union type with struct variants" do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
         data_prop = result.properties.find { |p| p.name == "data" }
-        expect(data_prop.type).to be_a(Skit::JsonSchema::Definitions::PropertyType)
-        expect(data_prop.type.to_sorbet_type).to eq("T.untyped")
+        expect(data_prop.type).to be_a(Skit::JsonSchema::Definitions::UnionPropertyType)
+        expect(data_prop.type.to_sorbet_type).to eq("T.any(UserDataVariant0, UserDataVariant1)")
+      end
+
+      it "creates nested structs for each union member" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        expect(result.nested_structs.length).to eq(2)
+        class_names = result.nested_structs.map(&:class_name)
+        expect(class_names).to include("UserDataVariant0", "UserDataVariant1")
       end
     end
   end

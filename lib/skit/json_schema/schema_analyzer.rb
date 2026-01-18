@@ -358,25 +358,13 @@ module Skit
           return has_null ? make_nullable(single_type) : single_type
         end
 
-        # Analyze multiple types
-        types = non_null_schemas.map do |union_schema|
-          build_property_type(union_schema, class_name_path)
-        end
-
-        # Don't support complex union types (containing object types)
-        if types.any? { |type| type.is_a?(Definitions::PropertyType) && !primitive_type?(type.base_type) }
-          # Fallback to T.untyped
-          fallback_type = Definitions::PropertyType.new(base_type: "T.untyped")
-          return has_null ? make_nullable(fallback_type) : fallback_type
+        # Analyze multiple types with unique class names for each member
+        types = non_null_schemas.each_with_index.map do |union_schema, index|
+          build_property_type(union_schema, class_name_path.append("Variant#{index}"))
         end
 
         union_type = Definitions::UnionPropertyType.new(types: types)
         has_null ? make_nullable(union_type) : union_type
-      end
-
-      sig { params(base_type: String).returns(T::Boolean) }
-      def primitive_type?(base_type)
-        %w[String Integer Float T::Boolean DateTime Date Time].include?(base_type)
       end
 
       sig { params(property_type: Definitions::PropertyTypes).returns(Definitions::PropertyTypes) }

@@ -6,9 +6,9 @@
 require "spec_helper"
 
 RSpec.describe "Discriminated union with const", type: :integration do
-  # NOTE: The current SchemaAnalyzer falls back to T.untyped for oneOf with objects.
-  # These tests verify that the serialization layer works correctly for discriminated unions
-  # when used as a property type in a container struct.
+  # These tests verify that:
+  # 1. Code generation produces T.any(...) for oneOf with objects
+  # 2. The serialization layer correctly handles discriminated unions
 
   describe "discriminated union as struct property" do
     before(:all) do
@@ -267,11 +267,26 @@ RSpec.describe "Discriminated union with const", type: :integration do
       }
     end
 
-    it "falls back to T.untyped for complex object unions (current behavior)" do
+    it "generates union type for oneOf with objects" do
       code = Skit::JsonSchema.generate(schema, module_name: "OneOfTest")
 
-      # Current behavior: complex object unions fall back to T.untyped
-      expect(code).to include("prop :data, T.untyped")
+      # Should generate T.any(...) for object unions
+      expect(code).to include("prop :data, T.any(")
+      expect(code).not_to include("T.untyped")
+    end
+
+    it "generates nested structs for each union member" do
+      code = Skit::JsonSchema.generate(schema, module_name: "OneOfTest")
+
+      expect(code).to include("class ContainerDataVariant0 < T::Struct")
+      expect(code).to include("class ContainerDataVariant1 < T::Struct")
+    end
+
+    it "generates const types for discriminator properties" do
+      code = Skit::JsonSchema.generate(schema, module_name: "OneOfTest")
+
+      expect(code).to include("class TypeDog < Skit::JsonSchema::Types::Const")
+      expect(code).to include("class TypeCat < Skit::JsonSchema::Types::Const")
     end
   end
 end
