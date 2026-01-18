@@ -11,10 +11,11 @@ require_relative "json_schema/definitions/hash_property_type"
 require_relative "json_schema/definitions/union_property_type"
 require_relative "json_schema/definitions/struct_property"
 require_relative "json_schema/definitions/struct"
+require_relative "json_schema/definitions/module"
 require_relative "json_schema/config"
 require_relative "json_schema/class_name_path"
 require_relative "json_schema/schema_analyzer"
-require_relative "json_schema/struct_code_generator"
+require_relative "json_schema/code_generator"
 require_relative "json_schema/cli"
 
 module Skit
@@ -65,10 +66,10 @@ module Skit
 
       # Analyze schema
       analyzer = SchemaAnalyzer.new(schema, config)
-      struct_definition = analyzer.analyze
+      module_definition = analyzer.analyze
 
       # Generate code
-      generator = StructCodeGenerator.new(struct_definition, config)
+      generator = CodeGenerator.new(module_definition, config)
       generator.generate
     end
   end

@@ -19,7 +19,7 @@ module Skit
         @ref_stack = T.let([], T::Array[String])
       end
 
-      sig { returns(Definitions::Struct) }
+      sig { returns(Definitions::Module) }
       def analyze
         validate_schema
 
@@ -27,7 +27,14 @@ module Skit
         raise Skit::Error, "Only object type schemas are supported at the top level" unless @schema["type"] == "object"
 
         root_class_name_path = determine_root_class_name
-        build_struct(@schema, root_class_name_path)
+        root_struct = build_struct(@schema, root_class_name_path)
+
+        Definitions::Module.new(
+          root_struct: root_struct,
+          nested_structs: @nested_structs.values,
+          const_types: @const_types.values,
+          enum_types: @enum_types.values
+        )
       end
 
       private
@@ -97,9 +104,6 @@ module Skit
         Definitions::Struct.new(
           class_name: class_name_path.to_class_name,
           properties: properties,
-          nested_structs: @nested_structs.values,
-          const_types: @const_types.values,
-          enum_types: @enum_types.values,
           description: schema["description"]
         )
       end

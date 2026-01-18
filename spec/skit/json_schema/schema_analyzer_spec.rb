@@ -24,18 +24,18 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        expect(result.class_name).to eq("User")
-        expect(result.properties.length).to eq(3)
+        expect(result.root_struct.class_name).to eq("User")
+        expect(result.root_struct.properties.length).to eq(3)
 
-        name_prop = result.properties.find { |p| p.name == "name" }
+        name_prop = result.root_struct.properties.find { |p| p.name == "name" }
         expect(name_prop.type.to_sorbet_type).to eq("String")
         expect(name_prop.required?).to be(true)
 
-        age_prop = result.properties.find { |p| p.name == "age" }
+        age_prop = result.root_struct.properties.find { |p| p.name == "age" }
         expect(age_prop.type.to_sorbet_type).to eq("Integer")
         expect(age_prop.required?).to be(true)
 
-        active_prop = result.properties.find { |p| p.name == "active" }
+        active_prop = result.root_struct.properties.find { |p| p.name == "active" }
         expect(active_prop.type.to_sorbet_type).to eq("T.nilable(T::Boolean)")
         expect(active_prop.required?).to be(false)
       end
@@ -99,10 +99,10 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        tags_prop = result.properties.find { |p| p.name == "tags" }
+        tags_prop = result.root_struct.properties.find { |p| p.name == "tags" }
         expect(tags_prop.type.to_sorbet_type).to eq("T.nilable(T::Array[String])")
 
-        scores_prop = result.properties.find { |p| p.name == "scores" }
+        scores_prop = result.root_struct.properties.find { |p| p.name == "scores" }
         expect(scores_prop.type.to_sorbet_type).to eq("T.nilable(T::Array[Integer])")
       end
     end
@@ -124,16 +124,16 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        created_at_prop = result.properties.find { |p| p.name == "created_at" }
+        created_at_prop = result.root_struct.properties.find { |p| p.name == "created_at" }
         expect(created_at_prop.type.to_sorbet_type).to eq("T.nilable(DateTime)")
 
-        birthday_prop = result.properties.find { |p| p.name == "birthday" }
+        birthday_prop = result.root_struct.properties.find { |p| p.name == "birthday" }
         expect(birthday_prop.type.to_sorbet_type).to eq("T.nilable(Date)")
 
-        meeting_time_prop = result.properties.find { |p| p.name == "meeting_time" }
+        meeting_time_prop = result.root_struct.properties.find { |p| p.name == "meeting_time" }
         expect(meeting_time_prop.type.to_sorbet_type).to eq("T.nilable(Time)")
 
-        description_prop = result.properties.find { |p| p.name == "description" }
+        description_prop = result.root_struct.properties.find { |p| p.name == "description" }
         expect(description_prop.type.to_sorbet_type).to eq("T.nilable(String)")
       end
     end
@@ -157,9 +157,9 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        expect(result.description).to eq("A user entity")
+        expect(result.root_struct.description).to eq("A user entity")
 
-        name_prop = result.properties.find { |p| p.name == "name" }
+        name_prop = result.root_struct.properties.find { |p| p.name == "name" }
         expect(name_prop.comment).to eq("User's full name\nExamples: John Doe, Jane Smith")
       end
     end
@@ -191,7 +191,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        metadata_property = result.properties.find { |p| p.name == "metadata" }
+        metadata_property = result.root_struct.properties.find { |p| p.name == "metadata" }
         expect(metadata_property.type.to_sorbet_type).to eq("T.nilable(T::Hash[String, T.untyped])")
       end
     end
@@ -210,7 +210,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        items_property = result.properties.find { |p| p.name == "items" }
+        items_property = result.root_struct.properties.find { |p| p.name == "items" }
         expect(items_property.type.to_sorbet_type).to eq("T.nilable(T::Array[T.untyped])")
       end
     end
@@ -243,13 +243,13 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        expect(result.properties.length).to eq(2)
+        expect(result.root_struct.properties.length).to eq(2)
 
-        name_prop = result.properties.find { |p| p.name == "name" }
+        name_prop = result.root_struct.properties.find { |p| p.name == "name" }
         expect(name_prop.type.to_sorbet_type).to eq("String")
         expect(name_prop.required?).to be(true)
 
-        address_prop = result.properties.find { |p| p.name == "address" }
+        address_prop = result.root_struct.properties.find { |p| p.name == "address" }
         expect(address_prop.type.to_sorbet_type).to eq("T.nilable(UserAddress)")
         expect(address_prop.required?).to be(false)
 
@@ -338,7 +338,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        value_prop = result.properties.find { |p| p.name == "value" }
+        value_prop = result.root_struct.properties.find { |p| p.name == "value" }
         expect(value_prop.type).to be_a(Skit::JsonSchema::Definitions::UnionPropertyType)
         expect(value_prop.type.to_sorbet_type).to eq("T.any(String, Integer)")
       end
@@ -364,7 +364,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        value_prop = result.properties.find { |p| p.name == "value" }
+        value_prop = result.root_struct.properties.find { |p| p.name == "value" }
         expect(value_prop.type).to be_a(Skit::JsonSchema::Definitions::PropertyType)
         expect(value_prop.type.to_sorbet_type).to eq("T.nilable(String)")
       end
@@ -396,7 +396,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        data_prop = result.properties.find { |p| p.name == "data" }
+        data_prop = result.root_struct.properties.find { |p| p.name == "data" }
         expect(data_prop.type).to be_a(Skit::JsonSchema::Definitions::UnionPropertyType)
         expect(data_prop.type.to_sorbet_type).to eq("T.any(UserDataVariant0, UserDataVariant1)")
       end
@@ -428,7 +428,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        type_prop = result.properties.find { |p| p.name == "type" }
+        type_prop = result.root_struct.properties.find { |p| p.name == "type" }
         expect(type_prop.type).to be_a(Skit::JsonSchema::Definitions::ConstType)
         expect(type_prop.type.class_name).to eq("TypeDog")
         expect(type_prop.type.value).to eq("dog")
@@ -461,7 +461,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        status_prop = result.properties.find { |p| p.name == "status" }
+        status_prop = result.root_struct.properties.find { |p| p.name == "status" }
         expect(status_prop.type).to be_a(Skit::JsonSchema::Definitions::ConstType)
         expect(status_prop.type.class_name).to eq("StatusVal200")
         expect(status_prop.type.value).to eq(200)
@@ -483,7 +483,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        enabled_prop = result.properties.find { |p| p.name == "enabled" }
+        enabled_prop = result.root_struct.properties.find { |p| p.name == "enabled" }
         expect(enabled_prop.type).to be_a(Skit::JsonSchema::Definitions::ConstType)
         expect(enabled_prop.type.class_name).to eq("EnabledTrue")
         expect(enabled_prop.type.value).to be(true)
@@ -504,7 +504,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        type_prop = result.properties.find { |p| p.name == "type" }
+        type_prop = result.root_struct.properties.find { |p| p.name == "type" }
         expect(type_prop.type).to be_a(Skit::JsonSchema::Definitions::ConstType)
         expect(type_prop.type.nullable).to be(true)
         expect(type_prop.type.to_sorbet_type).to eq("T.nilable(TypeCat)")
@@ -545,10 +545,10 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
 
         expect(result.const_types.length).to eq(2)
 
-        animal_type_prop = result.properties.find { |p| p.name == "animal_type" }
+        animal_type_prop = result.root_struct.properties.find { |p| p.name == "animal_type" }
         expect(animal_type_prop.type.class_name).to eq("AnimalTypeDog")
 
-        status_prop = result.properties.find { |p| p.name == "status" }
+        status_prop = result.root_struct.properties.find { |p| p.name == "status" }
         expect(status_prop.type.class_name).to eq("StatusActive")
       end
     end
@@ -573,7 +573,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        status_prop = result.properties.find { |p| p.name == "status" }
+        status_prop = result.root_struct.properties.find { |p| p.name == "status" }
         expect(status_prop.type).to be_a(Skit::JsonSchema::Definitions::EnumType)
         expect(status_prop.type.class_name).to eq("Status")
         expect(status_prop.type.values).to eq(%w[active inactive pending])
@@ -609,7 +609,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        priority_prop = result.properties.find { |p| p.name == "priority" }
+        priority_prop = result.root_struct.properties.find { |p| p.name == "priority" }
         expect(priority_prop.type).to be_a(Skit::JsonSchema::Definitions::EnumType)
         expect(priority_prop.type.class_name).to eq("Priority")
         expect(priority_prop.type.values).to eq([1, 2, 3])
@@ -633,7 +633,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        status_prop = result.properties.find { |p| p.name == "status" }
+        status_prop = result.root_struct.properties.find { |p| p.name == "status" }
         expect(status_prop.type).to be_a(Skit::JsonSchema::Definitions::EnumType)
         expect(status_prop.type.nullable).to be(true)
         expect(status_prop.type.to_sorbet_type).to eq("T.nilable(Status)")
@@ -656,7 +656,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        value_prop = result.properties.find { |p| p.name == "value" }
+        value_prop = result.root_struct.properties.find { |p| p.name == "value" }
         expect(value_prop.type).to be_a(Skit::JsonSchema::Definitions::PropertyType)
         expect(value_prop.type.to_sorbet_type).to eq("T.nilable(T.untyped)")
       end
@@ -678,7 +678,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, config)
         result = analyzer.analyze
 
-        data_prop = result.properties.find { |p| p.name == "data" }
+        data_prop = result.root_struct.properties.find { |p| p.name == "data" }
         expect(data_prop.type).to be_a(Skit::JsonSchema::Definitions::PropertyType)
         expect(data_prop.type.to_sorbet_type).to eq("T.nilable(T.untyped)")
       end
@@ -708,10 +708,10 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
 
         expect(result.enum_types.length).to eq(2)
 
-        status_prop = result.properties.find { |p| p.name == "status" }
+        status_prop = result.root_struct.properties.find { |p| p.name == "status" }
         expect(status_prop.type.class_name).to eq("Status")
 
-        priority_prop = result.properties.find { |p| p.name == "priority" }
+        priority_prop = result.root_struct.properties.find { |p| p.name == "priority" }
         expect(priority_prop.type.class_name).to eq("Priority")
       end
     end
@@ -734,7 +734,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, custom_config)
         result = analyzer.analyze
 
-        expect(result.class_name).to eq("CustomUser")
+        expect(result.root_struct.class_name).to eq("CustomUser")
       end
     end
 
@@ -754,7 +754,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, no_class_name_config)
         result = analyzer.analyze
 
-        expect(result.class_name).to eq("UserProfile")
+        expect(result.root_struct.class_name).to eq("UserProfile")
       end
     end
 
@@ -773,7 +773,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         analyzer = described_class.new(schema, no_class_name_config)
         result = analyzer.analyze
 
-        expect(result.class_name).to eq("GeneratedClass")
+        expect(result.root_struct.class_name).to eq("GeneratedClass")
       end
     end
   end

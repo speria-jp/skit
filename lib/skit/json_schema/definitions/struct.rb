@@ -13,15 +13,6 @@ module Skit
         sig { returns(T::Array[StructProperty]) }
         attr_reader :properties
 
-        sig { returns(T::Array[Struct]) }
-        attr_reader :nested_structs
-
-        sig { returns(T::Array[ConstType]) }
-        attr_reader :const_types
-
-        sig { returns(T::Array[EnumType]) }
-        attr_reader :enum_types
-
         sig { returns(T.nilable(String)) }
         attr_reader :description
 
@@ -29,21 +20,12 @@ module Skit
           params(
             class_name: String,
             properties: T::Array[StructProperty],
-            nested_structs: T::Array[Struct],
-            const_types: T::Array[ConstType],
-            enum_types: T::Array[EnumType],
             description: T.nilable(String)
           ).void
         end
-        # rubocop:disable Metrics/ParameterLists
-        def initialize(class_name:, properties: [], nested_structs: [], const_types: [], enum_types: [],
-                       description: nil)
-          # rubocop:enable Metrics/ParameterLists
+        def initialize(class_name:, properties: [], description: nil)
           @class_name = T.let(validate_class_name(class_name), String)
           @properties = properties
-          @nested_structs = nested_structs
-          @const_types = const_types
-          @enum_types = enum_types
           @description = description
         end
 
@@ -54,11 +36,6 @@ module Skit
             types.concat(extract_types_from_property_type(property.type))
           end
           types.uniq
-        end
-
-        sig { returns(T::Boolean) }
-        def nested_structs?
-          !@nested_structs.empty?
         end
 
         sig { returns(T::Array[StructProperty]) }
@@ -74,11 +51,6 @@ module Skit
         sig { params(property: StructProperty).void }
         def add_property(property)
           @properties << property
-        end
-
-        sig { params(nested_struct: Struct).void }
-        def add_nested_struct(nested_struct)
-          @nested_structs << nested_struct
         end
 
         private

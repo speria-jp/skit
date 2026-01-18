@@ -3,12 +3,12 @@
 
 module Skit
   module JsonSchema
-    class StructCodeGenerator
+    class CodeGenerator
       extend T::Sig
 
-      sig { params(struct_definition: Definitions::Struct, config: Config).void }
-      def initialize(struct_definition, config)
-        @struct_definition = struct_definition
+      sig { params(module_definition: Definitions::Module, config: Config).void }
+      def initialize(module_definition, config)
+        @module_definition = module_definition
         @config = config
       end
 
@@ -35,26 +35,26 @@ module Skit
           end
 
           # Enum types first (within module)
-          @struct_definition.enum_types.each do |enum_type|
+          @module_definition.enum_types.each do |enum_type|
             parts << ""
             parts << generate_enum_class(enum_type, module_parts.length)
           end
 
           # Const types (within module)
-          @struct_definition.const_types.each do |const_type|
+          @module_definition.const_types.each do |const_type|
             parts << ""
             parts << generate_const_class(const_type, module_parts.length)
           end
 
           # Nested structs (within module)
-          @struct_definition.nested_structs.each do |nested_struct|
+          @module_definition.nested_structs.each do |nested_struct|
             parts << ""
             parts << generate_single_struct(nested_struct, module_parts.length)
           end
 
           # Main struct (within module)
           parts << ""
-          parts << generate_single_struct(@struct_definition, module_parts.length)
+          parts << generate_single_struct(@module_definition.root_struct, module_parts.length)
 
           # End module
           module_parts.reverse.each_with_index do |_, index|
@@ -62,26 +62,26 @@ module Skit
           end
         else
           # Enum types first
-          @struct_definition.enum_types.each do |enum_type|
+          @module_definition.enum_types.each do |enum_type|
             parts << ""
             parts << generate_enum_class(enum_type)
           end
 
           # Const types
-          @struct_definition.const_types.each do |const_type|
+          @module_definition.const_types.each do |const_type|
             parts << ""
             parts << generate_const_class(const_type)
           end
 
           # Nested structs
-          @struct_definition.nested_structs.each do |nested_struct|
+          @module_definition.nested_structs.each do |nested_struct|
             parts << ""
             parts << generate_single_struct(nested_struct)
           end
 
           # Main struct
           parts << ""
-          parts << generate_single_struct(@struct_definition)
+          parts << generate_single_struct(@module_definition.root_struct)
         end
 
         parts.join("\n")
@@ -91,7 +91,7 @@ module Skit
 
       sig { returns(T::Boolean) }
       def const_types?
-        !@struct_definition.const_types.empty?
+        !@module_definition.const_types.empty?
       end
 
       sig { params(enum_type: Definitions::EnumType, indent_level: Integer).returns(String) }

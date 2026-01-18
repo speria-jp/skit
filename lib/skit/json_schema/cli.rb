@@ -79,9 +79,9 @@ module Skit
           typed_strictness: T.cast(options[:typed_strictness], String)
         )
         analyzer = SchemaAnalyzer.new(T.cast(schema, T::Hash[String, T.untyped]), config)
-        struct_definition = analyzer.analyze
+        module_definition = analyzer.analyze
 
-        generator = StructCodeGenerator.new(struct_definition, config)
+        generator = CodeGenerator.new(module_definition, config)
         ruby_code = generator.generate
 
         output_result(ruby_code, options)

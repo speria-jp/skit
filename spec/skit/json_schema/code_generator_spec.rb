@@ -3,12 +3,24 @@
 
 require "spec_helper"
 
-RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
+RSpec.describe Skit::JsonSchema::CodeGenerator, type: :unit do
   let(:config) { Skit::JsonSchema::Config.new(typed_strictness: "strict") }
+
+  # Helper to create a simple ModuleDefinition
+  let(:build_module) do
+    lambda do |root_struct:, nested_structs: [], const_types: [], enum_types: []|
+      Skit::JsonSchema::Definitions::Module.new(
+        root_struct: root_struct,
+        nested_structs: nested_structs,
+        const_types: const_types,
+        enum_types: enum_types
+      )
+    end
+  end
 
   describe "#generate" do
     context "with simple struct definition" do
-      let(:struct_def) do
+      let(:root_struct) do
         Skit::JsonSchema::Definitions::Struct.new(
           class_name: "User",
           properties: [
@@ -24,8 +36,10 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
         )
       end
 
+      let(:module_def) { build_module.call(root_struct: root_struct) }
+
       it "generates valid Ruby code" do
-        generator = described_class.new(struct_def, config)
+        generator = described_class.new(module_def, config)
         result = generator.generate
 
         expect(result).to include("# typed: strict")
@@ -50,7 +64,7 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
         )
       end
 
-      let(:struct_def) do
+      let(:root_struct) do
         Skit::JsonSchema::Definitions::Struct.new(
           class_name: "User",
           properties: [
@@ -58,13 +72,14 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
               name: "address",
               type: Skit::JsonSchema::Definitions::PropertyType.new(base_type: "UserAddress")
             )
-          ],
-          nested_structs: [nested_struct]
+          ]
         )
       end
 
+      let(:module_def) { build_module.call(root_struct: root_struct, nested_structs: [nested_struct]) }
+
       it "generates nested struct before main struct" do
-        generator = described_class.new(struct_def, config)
+        generator = described_class.new(module_def, config)
         result = generator.generate
 
         # Nested struct should appear before main struct
@@ -76,15 +91,17 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
 
     context "with module name" do
       let(:module_config) { Skit::JsonSchema::Config.new(module_name: "MyModule", typed_strictness: "strict") }
-      let(:struct_def) do
+      let(:root_struct) do
         Skit::JsonSchema::Definitions::Struct.new(
           class_name: "User",
           properties: []
         )
       end
 
+      let(:module_def) { build_module.call(root_struct: root_struct) }
+
       it "wraps struct in module" do
-        generator = described_class.new(struct_def, module_config)
+        generator = described_class.new(module_def, module_config)
         result = generator.generate
 
         expect(result).to include("module MyModule")
@@ -94,15 +111,17 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
 
     context "with nested module name" do
       let(:module_config) { Skit::JsonSchema::Config.new(module_name: "Foo::Bar", typed_strictness: "strict") }
-      let(:struct_def) do
+      let(:root_struct) do
         Skit::JsonSchema::Definitions::Struct.new(
           class_name: "User",
           properties: []
         )
       end
 
+      let(:module_def) { build_module.call(root_struct: root_struct) }
+
       it "wraps struct in nested modules" do
-        generator = described_class.new(struct_def, module_config)
+        generator = described_class.new(module_def, module_config)
         result = generator.generate
 
         expect(result).to include("module Foo")
@@ -112,7 +131,7 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
     end
 
     context "with property comments" do
-      let(:struct_def) do
+      let(:root_struct) do
         Skit::JsonSchema::Definitions::Struct.new(
           class_name: "User",
           properties: [
@@ -125,8 +144,10 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
         )
       end
 
+      let(:module_def) { build_module.call(root_struct: root_struct) }
+
       it "includes property comments" do
-        generator = described_class.new(struct_def, config)
+        generator = described_class.new(module_def, config)
         result = generator.generate
 
         expect(result).to include("# User's full name")
@@ -135,7 +156,7 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
     end
 
     context "with description" do
-      let(:struct_def) do
+      let(:root_struct) do
         Skit::JsonSchema::Definitions::Struct.new(
           class_name: "User",
           properties: [],
@@ -143,8 +164,10 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
         )
       end
 
+      let(:module_def) { build_module.call(root_struct: root_struct) }
+
       it "includes class description" do
-        generator = described_class.new(struct_def, config)
+        generator = described_class.new(module_def, config)
         result = generator.generate
 
         expect(result).to include("# A user entity")
@@ -160,7 +183,7 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
         )
       end
 
-      let(:struct_def) do
+      let(:root_struct) do
         Skit::JsonSchema::Definitions::Struct.new(
           class_name: "Animal",
           properties: [
@@ -168,13 +191,14 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
               name: "type",
               type: const_type
             )
-          ],
-          const_types: [const_type]
+          ]
         )
       end
 
+      let(:module_def) { build_module.call(root_struct: root_struct, const_types: [const_type]) }
+
       it "generates const class with VALUE constant" do
-        generator = described_class.new(struct_def, config)
+        generator = described_class.new(module_def, config)
         result = generator.generate
 
         expect(result).to include('require "skit"')
@@ -183,7 +207,7 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
       end
 
       it "generates const class before main struct" do
-        generator = described_class.new(struct_def, config)
+        generator = described_class.new(module_def, config)
         result = generator.generate
 
         const_pos = result.index("class TypeDog")
@@ -192,7 +216,7 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
       end
 
       it "uses const type in struct property" do
-        generator = described_class.new(struct_def, config)
+        generator = described_class.new(module_def, config)
         result = generator.generate
 
         expect(result).to include("prop :type, TypeDog")
@@ -207,7 +231,7 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
         )
       end
 
-      let(:struct_def) do
+      let(:root_struct) do
         Skit::JsonSchema::Definitions::Struct.new(
           class_name: "Response",
           properties: [
@@ -215,13 +239,14 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
               name: "status",
               type: const_type
             )
-          ],
-          const_types: [const_type]
+          ]
         )
       end
 
+      let(:module_def) { build_module.call(root_struct: root_struct, const_types: [const_type]) }
+
       it "generates const class with integer VALUE" do
-        generator = described_class.new(struct_def, config)
+        generator = described_class.new(module_def, config)
         result = generator.generate
 
         expect(result).to include("class StatusVal200 < Skit::JsonSchema::Types::Const")
@@ -239,7 +264,7 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
         )
       end
 
-      let(:struct_def) do
+      let(:root_struct) do
         Skit::JsonSchema::Definitions::Struct.new(
           class_name: "Animal",
           properties: [
@@ -247,13 +272,14 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
               name: "type",
               type: const_type
             )
-          ],
-          const_types: [const_type]
+          ]
         )
       end
 
+      let(:module_def) { build_module.call(root_struct: root_struct, const_types: [const_type]) }
+
       it "wraps const class in module" do
-        generator = described_class.new(struct_def, module_config)
+        generator = described_class.new(module_def, module_config)
         result = generator.generate
 
         expect(result).to include("module MyModule")
@@ -277,16 +303,17 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
         )
       end
 
-      let(:struct_def) do
+      let(:root_struct) do
         Skit::JsonSchema::Definitions::Struct.new(
           class_name: "Animal",
-          properties: [],
-          const_types: [dog_const, cat_const]
+          properties: []
         )
       end
 
+      let(:module_def) { build_module.call(root_struct: root_struct, const_types: [dog_const, cat_const]) }
+
       it "generates all const classes" do
-        generator = described_class.new(struct_def, config)
+        generator = described_class.new(module_def, config)
         result = generator.generate
 
         expect(result).to include("class TypeDog < Skit::JsonSchema::Types::Const")
@@ -304,7 +331,7 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
         )
       end
 
-      let(:struct_def) do
+      let(:root_struct) do
         Skit::JsonSchema::Definitions::Struct.new(
           class_name: "User",
           properties: [
@@ -312,13 +339,14 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
               name: "status",
               type: enum_type
             )
-          ],
-          enum_types: [enum_type]
+          ]
         )
       end
 
+      let(:module_def) { build_module.call(root_struct: root_struct, enum_types: [enum_type]) }
+
       it "generates T::Enum class with enums block" do
-        generator = described_class.new(struct_def, config)
+        generator = described_class.new(module_def, config)
         result = generator.generate
 
         expect(result).to include("class Status < T::Enum")
@@ -329,7 +357,7 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
       end
 
       it "generates enum class before main struct" do
-        generator = described_class.new(struct_def, config)
+        generator = described_class.new(module_def, config)
         result = generator.generate
 
         enum_pos = result.index("class Status < T::Enum")
@@ -338,7 +366,7 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
       end
 
       it "uses enum type in struct property" do
-        generator = described_class.new(struct_def, config)
+        generator = described_class.new(module_def, config)
         result = generator.generate
 
         expect(result).to include("prop :status, Status")
@@ -353,7 +381,7 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
         )
       end
 
-      let(:struct_def) do
+      let(:root_struct) do
         Skit::JsonSchema::Definitions::Struct.new(
           class_name: "Task",
           properties: [
@@ -361,13 +389,14 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
               name: "priority",
               type: enum_type
             )
-          ],
-          enum_types: [enum_type]
+          ]
         )
       end
 
+      let(:module_def) { build_module.call(root_struct: root_struct, enum_types: [enum_type]) }
+
       it "generates T::Enum with integer values" do
-        generator = described_class.new(struct_def, config)
+        generator = described_class.new(module_def, config)
         result = generator.generate
 
         expect(result).to include("class Priority < T::Enum")
@@ -387,16 +416,17 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
         )
       end
 
-      let(:struct_def) do
+      let(:root_struct) do
         Skit::JsonSchema::Definitions::Struct.new(
           class_name: "User",
-          properties: [],
-          enum_types: [enum_type]
+          properties: []
         )
       end
 
+      let(:module_def) { build_module.call(root_struct: root_struct, enum_types: [enum_type]) }
+
       it "wraps enum class in module" do
-        generator = described_class.new(struct_def, module_config)
+        generator = described_class.new(module_def, module_config)
         result = generator.generate
 
         expect(result).to include("module MyModule")
