@@ -16,6 +16,9 @@ module Skit
         sig { returns(T::Array[Struct]) }
         attr_reader :nested_structs
 
+        sig { returns(T::Array[ConstType]) }
+        attr_reader :const_types
+
         sig { returns(T.nilable(String)) }
         attr_reader :description
 
@@ -24,13 +27,15 @@ module Skit
             class_name: String,
             properties: T::Array[StructProperty],
             nested_structs: T::Array[Struct],
+            const_types: T::Array[ConstType],
             description: T.nilable(String)
           ).void
         end
-        def initialize(class_name:, properties: [], nested_structs: [], description: nil)
+        def initialize(class_name:, properties: [], nested_structs: [], const_types: [], description: nil)
           @class_name = T.let(validate_class_name(class_name), String)
           @properties = properties
           @nested_structs = nested_structs
+          @const_types = const_types
           @description = description
         end
 
@@ -94,6 +99,9 @@ module Skit
             property_type.types.each do |union_type|
               types.concat(extract_types_from_property_type(union_type))
             end
+          when ConstType
+            # ConstType references itself as a custom type
+            types << property_type.class_name
           when PropertyType
             base_type = property_type.base_type
             # Check if it's a custom class (inheriting from T::Struct)

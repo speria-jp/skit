@@ -151,5 +151,149 @@ RSpec.describe Skit::JsonSchema::StructCodeGenerator, type: :unit do
         expect(result).to include("class User < T::Struct")
       end
     end
+
+    context "with const types" do
+      let(:const_type) do
+        Skit::JsonSchema::Definitions::ConstType.new(
+          class_name: "TypeDog",
+          value: "dog"
+        )
+      end
+
+      let(:struct_def) do
+        Skit::JsonSchema::Definitions::Struct.new(
+          class_name: "Animal",
+          properties: [
+            Skit::JsonSchema::Definitions::StructProperty.new(
+              name: "type",
+              type: const_type
+            )
+          ],
+          const_types: [const_type]
+        )
+      end
+
+      it "generates const class with VALUE constant" do
+        generator = described_class.new(struct_def, config)
+        result = generator.generate
+
+        expect(result).to include('require "skit"')
+        expect(result).to include("class TypeDog < Skit::JsonSchema::Types::Const")
+        expect(result).to include('VALUE = "dog"')
+      end
+
+      it "generates const class before main struct" do
+        generator = described_class.new(struct_def, config)
+        result = generator.generate
+
+        const_pos = result.index("class TypeDog")
+        struct_pos = result.index("class Animal < T::Struct")
+        expect(const_pos).to be < struct_pos
+      end
+
+      it "uses const type in struct property" do
+        generator = described_class.new(struct_def, config)
+        result = generator.generate
+
+        expect(result).to include("prop :type, TypeDog")
+      end
+    end
+
+    context "with integer const type" do
+      let(:const_type) do
+        Skit::JsonSchema::Definitions::ConstType.new(
+          class_name: "StatusVal200",
+          value: 200
+        )
+      end
+
+      let(:struct_def) do
+        Skit::JsonSchema::Definitions::Struct.new(
+          class_name: "Response",
+          properties: [
+            Skit::JsonSchema::Definitions::StructProperty.new(
+              name: "status",
+              type: const_type
+            )
+          ],
+          const_types: [const_type]
+        )
+      end
+
+      it "generates const class with integer VALUE" do
+        generator = described_class.new(struct_def, config)
+        result = generator.generate
+
+        expect(result).to include("class StatusVal200 < Skit::JsonSchema::Types::Const")
+        expect(result).to include("VALUE = 200")
+      end
+    end
+
+    context "with const types in module" do
+      let(:module_config) { Skit::JsonSchema::Config.new(module_name: "MyModule", typed_strictness: "strict") }
+
+      let(:const_type) do
+        Skit::JsonSchema::Definitions::ConstType.new(
+          class_name: "TypeDog",
+          value: "dog"
+        )
+      end
+
+      let(:struct_def) do
+        Skit::JsonSchema::Definitions::Struct.new(
+          class_name: "Animal",
+          properties: [
+            Skit::JsonSchema::Definitions::StructProperty.new(
+              name: "type",
+              type: const_type
+            )
+          ],
+          const_types: [const_type]
+        )
+      end
+
+      it "wraps const class in module" do
+        generator = described_class.new(struct_def, module_config)
+        result = generator.generate
+
+        expect(result).to include("module MyModule")
+        expect(result).to include("  class TypeDog < Skit::JsonSchema::Types::Const")
+        expect(result).to include('    VALUE = "dog"')
+      end
+    end
+
+    context "with multiple const types" do
+      let(:dog_const) do
+        Skit::JsonSchema::Definitions::ConstType.new(
+          class_name: "TypeDog",
+          value: "dog"
+        )
+      end
+
+      let(:cat_const) do
+        Skit::JsonSchema::Definitions::ConstType.new(
+          class_name: "TypeCat",
+          value: "cat"
+        )
+      end
+
+      let(:struct_def) do
+        Skit::JsonSchema::Definitions::Struct.new(
+          class_name: "Animal",
+          properties: [],
+          const_types: [dog_const, cat_const]
+        )
+      end
+
+      it "generates all const classes" do
+        generator = described_class.new(struct_def, config)
+        result = generator.generate
+
+        expect(result).to include("class TypeDog < Skit::JsonSchema::Types::Const")
+        expect(result).to include('VALUE = "dog"')
+        expect(result).to include("class TypeCat < Skit::JsonSchema::Types::Const")
+        expect(result).to include('VALUE = "cat"')
+      end
+    end
   end
 end

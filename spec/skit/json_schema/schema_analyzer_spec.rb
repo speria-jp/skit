@@ -403,6 +403,148 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
     end
   end
 
+  describe "const type support" do
+    context "with string const value" do
+      let(:schema) do
+        {
+          "type" => "object",
+          "properties" => {
+            "type" => { "const" => "dog" }
+          },
+          "required" => ["type"]
+        }
+      end
+
+      it "creates ConstType for const property" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        type_prop = result.properties.find { |p| p.name == "type" }
+        expect(type_prop.type).to be_a(Skit::JsonSchema::Definitions::ConstType)
+        expect(type_prop.type.class_name).to eq("TypeDog")
+        expect(type_prop.type.value).to eq("dog")
+        expect(type_prop.type.to_sorbet_type).to eq("TypeDog")
+      end
+
+      it "stores const type in const_types array" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        expect(result.const_types.length).to eq(1)
+        const_type = result.const_types.first
+        expect(const_type.class_name).to eq("TypeDog")
+        expect(const_type.value).to eq("dog")
+      end
+    end
+
+    context "with integer const value" do
+      let(:schema) do
+        {
+          "type" => "object",
+          "properties" => {
+            "status" => { "const" => 200 }
+          },
+          "required" => ["status"]
+        }
+      end
+
+      it "creates ConstType with proper class name for numbers" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        status_prop = result.properties.find { |p| p.name == "status" }
+        expect(status_prop.type).to be_a(Skit::JsonSchema::Definitions::ConstType)
+        expect(status_prop.type.class_name).to eq("StatusVal200")
+        expect(status_prop.type.value).to eq(200)
+      end
+    end
+
+    context "with boolean const value" do
+      let(:schema) do
+        {
+          "type" => "object",
+          "properties" => {
+            "enabled" => { "const" => true }
+          },
+          "required" => ["enabled"]
+        }
+      end
+
+      it "creates ConstType with proper class name for booleans" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        enabled_prop = result.properties.find { |p| p.name == "enabled" }
+        expect(enabled_prop.type).to be_a(Skit::JsonSchema::Definitions::ConstType)
+        expect(enabled_prop.type.class_name).to eq("EnabledTrue")
+        expect(enabled_prop.type.value).to be(true)
+      end
+    end
+
+    context "with optional const property" do
+      let(:schema) do
+        {
+          "type" => "object",
+          "properties" => {
+            "type" => { "const" => "cat" }
+          }
+        }
+      end
+
+      it "creates nullable ConstType when not required" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        type_prop = result.properties.find { |p| p.name == "type" }
+        expect(type_prop.type).to be_a(Skit::JsonSchema::Definitions::ConstType)
+        expect(type_prop.type.nullable).to be(true)
+        expect(type_prop.type.to_sorbet_type).to eq("T.nilable(TypeCat)")
+      end
+    end
+
+    context "with unsupported const value type" do
+      let(:schema) do
+        {
+          "type" => "object",
+          "properties" => {
+            "data" => { "const" => nil }
+          }
+        }
+      end
+
+      it "raises error for unsupported const value type" do
+        analyzer = described_class.new(schema, config)
+        expect { analyzer.analyze }.to raise_error(Skit::Error, /Unsupported const value type/)
+      end
+    end
+
+    context "with multiple const properties" do
+      let(:schema) do
+        {
+          "type" => "object",
+          "properties" => {
+            "animal_type" => { "const" => "dog" },
+            "status" => { "const" => "active" }
+          },
+          "required" => %w[animal_type status]
+        }
+      end
+
+      it "creates multiple ConstTypes" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        expect(result.const_types.length).to eq(2)
+
+        animal_type_prop = result.properties.find { |p| p.name == "animal_type" }
+        expect(animal_type_prop.type.class_name).to eq("AnimalTypeDog")
+
+        status_prop = result.properties.find { |p| p.name == "status" }
+        expect(status_prop.type.class_name).to eq("StatusActive")
+      end
+    end
+  end
+
   describe "title support" do
     context "with CLI class name specified" do
       let(:schema) do

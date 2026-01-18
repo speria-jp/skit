@@ -13,6 +13,7 @@ module Skit
         @schema = schema
         @schemer = T.let(JSONSchemer.schema(@schema), T.untyped)
         @nested_structs = T.let({}, T::Hash[String, Definitions::Struct])
+        @const_types = T.let({}, T::Hash[String, Definitions::ConstType])
         @config = config
         @ref_stack = T.let([], T::Array[String])
       end
@@ -96,6 +97,7 @@ module Skit
           class_name: class_name_path.to_class_name,
           properties: properties,
           nested_structs: @nested_structs.values,
+          const_types: @const_types.values,
           description: schema["description"]
         )
       end
@@ -119,6 +121,9 @@ module Skit
           end
           return result
         end
+
+        # Const type processing
+        return build_const_type(schema, class_name_path) if schema.key?("const")
 
         # Union type processing
         return build_union_type(schema, class_name_path) if schema["anyOf"] || schema["oneOf"]
@@ -185,6 +190,70 @@ module Skit
         else
           Definitions::PropertyType.new(base_type: "String")
         end
+      end
+
+      sig { params(schema: T::Hash[String, T.untyped], class_name_path: ClassNamePath).returns(Definitions::ConstType) }
+      def build_const_type(schema, class_name_path)
+        const_value = schema["const"]
+
+        # Validate const value type (only string, integer, float, boolean are supported)
+        unless valid_const_value?(const_value)
+          raise Skit::Error, "Unsupported const value type: #{const_value.class}. " \
+                             "Only String, Integer, Float, and Boolean are supported."
+        end
+
+        # Generate class name from property name and const value
+        class_name = generate_const_class_name(class_name_path, const_value)
+
+        const_type = Definitions::ConstType.new(
+          class_name: class_name,
+          value: const_value
+        )
+
+        # Store const type definition (dedup by class name)
+        @const_types[class_name] = const_type unless @const_types.key?(class_name)
+
+        const_type
+      end
+
+      sig { params(value: T.untyped).returns(T::Boolean) }
+      def valid_const_value?(value)
+        case value
+        when String, Integer, Float, TrueClass, FalseClass
+          true
+        else
+          false
+        end
+      end
+
+      sig { params(class_name_path: ClassNamePath, const_value: T.untyped).returns(String) }
+      def generate_const_class_name(class_name_path, const_value)
+        # Generate class name from property name and const value
+        # e.g., "type" property with value "dog" -> "TypeDog"
+        property_name = class_name_path.property_name
+
+        value_suffix = case const_value
+                       when String
+                         # Convert string value to PascalCase
+                         # "dog" -> "Dog", "my_value" -> "MyValue", "some-thing" -> "SomeThing"
+                         const_value.gsub(/[^a-zA-Z0-9]+/, "_")
+                                    .split("_")
+                                    .map(&:capitalize)
+                                    .join
+                       when Integer, Float
+                         # For numbers, prefix with "Val" to ensure valid class name
+                         # 200 -> "Val200", -1 -> "ValMinus1"
+                         num_str = const_value.to_s.gsub("-", "Minus").gsub(".", "Dot")
+                         "Val#{num_str}"
+                       when TrueClass
+                         "True"
+                       when FalseClass
+                         "False"
+                       else
+                         "Value"
+                       end
+
+        "#{property_name}#{value_suffix}"
       end
 
       sig { params(schema: T::Hash[String, T.untyped], class_name_path: ClassNamePath).returns(Definitions::ArrayPropertyType) }
@@ -257,6 +326,12 @@ module Skit
           Definitions::HashPropertyType.new(value_type: property_type.value_type, nullable: true)
         when Definitions::UnionPropertyType
           Definitions::UnionPropertyType.new(types: property_type.types, nullable: true)
+        when Definitions::ConstType
+          Definitions::ConstType.new(
+            class_name: property_type.class_name,
+            value: property_type.value,
+            nullable: true
+          )
         when Definitions::PropertyType
           Definitions::PropertyType.new(
             base_type: property_type.base_type,

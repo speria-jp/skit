@@ -5,7 +5,9 @@ module Skit
   module JsonSchema
     module Definitions
       # Type alias: Union type of PropertyType-related classes
-      PropertyTypes = T.type_alias { T.any(PropertyType, ArrayPropertyType, HashPropertyType, UnionPropertyType) }
+      PropertyTypes = T.type_alias do
+        T.any(PropertyType, ArrayPropertyType, HashPropertyType, UnionPropertyType, ConstType)
+      end
     end
   end
 end

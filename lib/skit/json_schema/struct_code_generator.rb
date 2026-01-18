@@ -24,6 +24,7 @@ module Skit
         parts << "# DO NOT EDIT MANUALLY"
         parts << ""
         parts << 'require "sorbet-runtime"'
+        parts << 'require "skit"' if const_types?
 
         if @config.module_name
           parts << ""
@@ -33,7 +34,13 @@ module Skit
             parts << "#{"  " * index}module #{module_part}"
           end
 
-          # Nested structs first (within module)
+          # Const types first (within module)
+          @struct_definition.const_types.each do |const_type|
+            parts << ""
+            parts << generate_const_class(const_type, module_parts.length)
+          end
+
+          # Nested structs (within module)
           @struct_definition.nested_structs.each do |nested_struct|
             parts << ""
             parts << generate_single_struct(nested_struct, module_parts.length)
@@ -48,7 +55,13 @@ module Skit
             parts << "#{"  " * (module_parts.length - index - 1)}end"
           end
         else
-          # Nested structs first
+          # Const types first
+          @struct_definition.const_types.each do |const_type|
+            parts << ""
+            parts << generate_const_class(const_type)
+          end
+
+          # Nested structs
           @struct_definition.nested_structs.each do |nested_struct|
             parts << ""
             parts << generate_single_struct(nested_struct)
@@ -63,6 +76,23 @@ module Skit
       end
 
       private
+
+      sig { returns(T::Boolean) }
+      def const_types?
+        !@struct_definition.const_types.empty?
+      end
+
+      sig { params(const_type: Definitions::ConstType, indent_level: Integer).returns(String) }
+      def generate_const_class(const_type, indent_level = 0)
+        lines = []
+        base_indent = "  " * indent_level
+
+        lines << "#{base_indent}class #{const_type.class_name} < Skit::JsonSchema::Types::Const"
+        lines << "#{base_indent}  VALUE = #{const_type.value_literal}"
+        lines << "#{base_indent}end"
+
+        lines.join("\n")
+      end
 
       sig { params(struct_def: Definitions::Struct, indent_level: Integer).returns(String) }
       def generate_single_struct(struct_def, indent_level = 0)
