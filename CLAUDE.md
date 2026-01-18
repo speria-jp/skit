@@ -68,6 +68,8 @@ lib/skit/
 │       ├── union.rb                 # T.any (union) processor
 │       ├── nilable.rb               # T.nilable processor
 │       ├── simple_type.rb           # T::Types::Simple wrapper
+│       ├── enum.rb                  # T::Enum processor
+│       ├── json_schema_const.rb     # Skit::JsonSchema::Types::Const processor
 │       └── (primitives)             # string, integer, float, boolean, symbol, date, time
 └── json_schema/
     ├── json_schema.rb               # Skit::JsonSchema.generate API
@@ -76,13 +78,17 @@ lib/skit/
     ├── schema_analyzer.rb           # JSON Schema parser
     ├── struct_code_generator.rb     # Code generator
     ├── class_name_path.rb           # Class name utilities
-    └── definitions/                 # Internal type definitions
-        ├── struct.rb
-        ├── struct_property.rb
-        ├── property_type.rb
-        ├── array_property_type.rb
-        ├── hash_property_type.rb
-        └── union_property_type.rb
+    ├── definitions/                 # Internal type definitions
+    │   ├── struct.rb
+    │   ├── struct_property.rb
+    │   ├── property_type.rb
+    │   ├── array_property_type.rb
+    │   ├── hash_property_type.rb
+    │   ├── union_property_type.rb
+    │   ├── enum_type.rb             # T::Enum definition
+    │   └── const_type.rb            # Const type definition
+    └── types/
+        └── const.rb                 # Skit::JsonSchema::Types::Const base class
 ```
 
 ### Processor Architecture
@@ -181,6 +187,9 @@ When adding new features:
 | `object` (with properties) | Custom T::Struct |
 | `object` (no properties) | `T::Hash[String, T.untyped]` |
 | `anyOf`/`oneOf` | `T.any(...)` or `T.nilable(...)` |
+| `anyOf`/`oneOf` (objects) | `T.any(Struct1, Struct2, ...)` |
+| `enum` | `T::Enum` |
+| `const` | `Skit::JsonSchema::Types::Const` subclass |
 
 ### Serialization Formats
 

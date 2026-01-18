@@ -81,6 +81,100 @@ module MyApp
 end
 ```
 
+#### Enum Support
+
+JSON Schema `enum` generates `T::Enum` classes:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["pending", "active", "completed"]
+    }
+  }
+}
+```
+
+Generates:
+
+```ruby
+class Status < T::Enum
+  enums do
+    Pending = new("pending")
+    Active = new("active")
+    Completed = new("completed")
+  end
+end
+
+class Root < T::Struct
+  prop :status, T.nilable(Status)
+end
+```
+
+#### Const Support
+
+JSON Schema `const` generates type-safe constant classes for discriminated unions:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "type": { "const": "dog" },
+    "breed": { "type": "string" }
+  }
+}
+```
+
+Generates:
+
+```ruby
+class TypeDog < Skit::JsonSchema::Types::Const
+  VALUE = "dog"
+end
+
+class Root < T::Struct
+  prop :type, T.nilable(TypeDog)
+  prop :breed, T.nilable(String)
+end
+```
+
+#### Discriminated Unions (oneOf with objects)
+
+JSON Schema `oneOf` with object types generates union types:
+
+```json
+{
+  "properties": {
+    "animal": {
+      "oneOf": [
+        { "type": "object", "properties": { "type": { "const": "dog" }, "breed": { "type": "string" } } },
+        { "type": "object", "properties": { "type": { "const": "cat" }, "color": { "type": "string" } } }
+      ]
+    }
+  }
+}
+```
+
+Generates:
+
+```ruby
+class AnimalVariant0 < T::Struct
+  prop :type, T.nilable(TypeDog)
+  prop :breed, T.nilable(String)
+end
+
+class AnimalVariant1 < T::Struct
+  prop :type, T.nilable(TypeCat)
+  prop :color, T.nilable(String)
+end
+
+class Root < T::Struct
+  prop :animal, T.any(AnimalVariant0, AnimalVariant1)
+end
+```
+
 ### 2. Serialize/Deserialize T::Struct
 
 Use your own T::Struct definitions directly:
@@ -265,6 +359,9 @@ cart.errors[:"items.[1].name"]  # => ["can't be blank"]
 | `object` (with properties) | Custom T::Struct |
 | `object` (no properties) | `T::Hash[String, T.untyped]` |
 | `anyOf`/`oneOf` | `T.any(...)` or `T.nilable(...)` |
+| `anyOf`/`oneOf` (objects) | `T.any(Struct1, Struct2, ...)` |
+| `enum` | `T::Enum` |
+| `const` | `Skit::JsonSchema::Types::Const` subclass |
 
 ### Sorbet to JSON (Serialization)
 
