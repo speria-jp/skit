@@ -46,7 +46,12 @@ module Skit
                               .gsub(/^_+|_+$/, "")
             return "Empty" if normalized.empty?
 
-            normalized.split("_").map(&:capitalize).join
+            result = normalized.split("_").map(&:capitalize).join
+
+            # Prefix with "Val" if the result starts with a number (invalid Ruby constant)
+            result = "Val#{result}" if result.match?(/\A\d/)
+
+            result
           when Integer
             # For integers, prefix with "Val" to ensure valid constant name
             # 1 -> "Val1", -5 -> "ValMinus5"
