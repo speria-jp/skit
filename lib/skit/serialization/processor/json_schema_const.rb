@@ -29,7 +29,7 @@ module Skit
 
         sig { override.params(value: T.untyped).returns(T.untyped) }
         def serialize(value)
-          raise TypeMismatchError, "Expected #{@const_class}, got #{value.class}" unless value.is_a?(@const_class)
+          raise SerializeError, "Expected #{@const_class}, got #{value.class}" unless value.is_a?(@const_class)
 
           value.value
         end
@@ -41,7 +41,7 @@ module Skit
           expected = @const_class.value
 
           unless value == expected
-            raise DeserializationError,
+            raise DeserializeError,
                   "Expected #{expected.inspect}, got #{value.inspect} for #{@const_class}"
           end
 

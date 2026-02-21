@@ -51,14 +51,14 @@ RSpec.describe Skit::Serialization::Processor::Array, type: :unit do
 
     it "raises error for non-array value" do
       expect { processor.serialize("not an array") }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         /Expected Array, got String/
       )
     end
 
     it "raises error for nil" do
       expect { processor.serialize(nil) }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         /Expected Array, got NilClass/
       )
     end
@@ -83,14 +83,14 @@ RSpec.describe Skit::Serialization::Processor::Array, type: :unit do
 
     it "raises error for non-array value" do
       expect { processor.deserialize("not an array") }.to raise_error(
-        Skit::Serialization::DeserializationError,
+        Skit::Serialization::DeserializeError,
         /Expected Array, got String/
       )
     end
 
     it "raises error for nil" do
       expect { processor.deserialize(nil) }.to raise_error(
-        Skit::Serialization::DeserializationError,
+        Skit::Serialization::DeserializeError,
         /Expected Array, got NilClass/
       )
     end

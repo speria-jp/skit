@@ -51,14 +51,14 @@ RSpec.describe Skit::Serialization::Processor::Hash, type: :unit do
 
     it "raises error for non-hash value" do
       expect { processor.serialize("not a hash") }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         /Expected Hash, got String/
       )
     end
 
     it "raises error for nil" do
       expect { processor.serialize(nil) }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         /Expected Hash, got NilClass/
       )
     end
@@ -86,14 +86,14 @@ RSpec.describe Skit::Serialization::Processor::Hash, type: :unit do
 
     it "raises error for non-hash value" do
       expect { processor.deserialize("not a hash") }.to raise_error(
-        Skit::Serialization::DeserializationError,
+        Skit::Serialization::DeserializeError,
         /Expected Hash, got String/
       )
     end
 
     it "raises error for nil" do
       expect { processor.deserialize(nil) }.to raise_error(
-        Skit::Serialization::DeserializationError,
+        Skit::Serialization::DeserializeError,
         /Expected Hash, got NilClass/
       )
     end

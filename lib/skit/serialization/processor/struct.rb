@@ -26,7 +26,7 @@ module Skit
 
         sig { override.params(value: T.untyped).returns(T::Hash[::String, T.untyped]) }
         def serialize(value)
-          raise TypeMismatchError, "Expected #{@struct_class}, got #{value.class}" unless value.is_a?(@struct_class)
+          raise SerializeError, "Expected #{@struct_class}, got #{value.class}" unless value.is_a?(@struct_class)
 
           @struct_class.props.each_with_object({}) do |(name, prop_def), hash|
             prop_value = value.public_send(name)
@@ -40,7 +40,7 @@ module Skit
         def deserialize(value)
           return value if value.is_a?(@struct_class)
 
-          raise DeserializationError, "Expected Hash, got #{value.class}" unless value.is_a?(::Hash)
+          raise DeserializeError, "Expected Hash, got #{value.class}" unless value.is_a?(::Hash)
 
           symbolized = value.transform_keys(&:to_sym)
 

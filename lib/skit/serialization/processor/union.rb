@@ -30,7 +30,7 @@ module Skit
           struct_class = find_struct_class_for_value(value)
 
           unless struct_class
-            raise TypeMismatchError,
+            raise SerializeError,
                   "#{value.class} is not a member of this union: #{@struct_classes.map(&:name).join(", ")}"
           end
 
@@ -43,7 +43,7 @@ module Skit
           return value if value_is_union_member?(value)
 
           unless value.is_a?(::Hash)
-            raise DeserializationError, "Expected Hash or union member struct, got #{value.class}"
+            raise DeserializeError, "Expected Hash or union member struct, got #{value.class}"
           end
 
           @struct_classes.each do |struct_class|
@@ -51,7 +51,7 @@ module Skit
             return result if result
           end
 
-          raise DeserializationError, "No matching struct found for union: #{@struct_classes.map(&:name).join(", ")}"
+          raise DeserializeError, "No matching struct found for union: #{@struct_classes.map(&:name).join(", ")}"
         end
 
         class << self
@@ -99,7 +99,7 @@ module Skit
         def try_deserialize(value, struct_class)
           processor = @registry.processor_for(struct_class)
           processor.deserialize(value)
-        rescue TypeMismatchError, DeserializationError, ArgumentError, TypeError
+        rescue SerializeError, DeserializeError, ArgumentError, TypeError
           nil
         end
       end

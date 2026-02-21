@@ -14,7 +14,7 @@ module Skit
 
         sig { override.params(value: T.untyped).returns(::String) }
         def serialize(value)
-          raise TypeMismatchError, "Expected Symbol, got #{value.class}" unless value.is_a?(::Symbol)
+          raise SerializeError, "Expected Symbol, got #{value.class}" unless value.is_a?(::Symbol)
 
           value.to_s
         end
@@ -23,7 +23,7 @@ module Skit
         def deserialize(value)
           return value if value.is_a?(::Symbol)
 
-          raise DeserializationError, "Expected String or Symbol, got #{value.class}" unless value.is_a?(::String)
+          raise DeserializeError, "Expected String or Symbol, got #{value.class}" unless value.is_a?(::String)
 
           value.to_sym
         end

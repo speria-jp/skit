@@ -65,14 +65,14 @@ RSpec.describe Skit::Serialization::Processor::Union, type: :unit do
 
     it "raises error for non-union member" do
       expect { processor.serialize("not a struct") }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         /is not a member of this union/
       )
     end
 
     it "raises error for nil" do
       expect { processor.serialize(nil) }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         /is not a member of this union/
       )
     end
@@ -103,14 +103,14 @@ RSpec.describe Skit::Serialization::Processor::Union, type: :unit do
 
     it "raises error for non-hash value" do
       expect { processor.deserialize("not a hash") }.to raise_error(
-        Skit::Serialization::DeserializationError,
+        Skit::Serialization::DeserializeError,
         /Expected Hash or union member struct/
       )
     end
 
     it "raises error for nil" do
       expect { processor.deserialize(nil) }.to raise_error(
-        Skit::Serialization::DeserializationError,
+        Skit::Serialization::DeserializeError,
         /Expected Hash or union member struct/
       )
     end
@@ -118,7 +118,7 @@ RSpec.describe Skit::Serialization::Processor::Union, type: :unit do
     it "raises error when no struct matches" do
       hash = { "unknown" => "field" }
       expect { processor.deserialize(hash) }.to raise_error(
-        Skit::Serialization::DeserializationError,
+        Skit::Serialization::DeserializeError,
         /No matching struct found for union/
       )
     end

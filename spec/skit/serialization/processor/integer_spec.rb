@@ -25,15 +25,15 @@ RSpec.describe Skit::Serialization::Processor::Integer, type: :unit do
 
     it "raises error for non-integer values" do
       expect { processor.serialize("123") }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         "Expected Integer, got String"
       )
       expect { processor.serialize(1.5) }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         "Expected Integer, got Float"
       )
       expect { processor.serialize(nil) }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         "Expected Integer, got NilClass"
       )
     end
@@ -46,11 +46,11 @@ RSpec.describe Skit::Serialization::Processor::Integer, type: :unit do
 
     it "raises error for non-integer values" do
       expect { processor.deserialize("123") }.to raise_error(
-        Skit::Serialization::DeserializationError,
+        Skit::Serialization::DeserializeError,
         "Expected Integer, got String"
       )
       expect { processor.deserialize(nil) }.to raise_error(
-        Skit::Serialization::DeserializationError,
+        Skit::Serialization::DeserializeError,
         "Expected Integer, got NilClass"
       )
     end

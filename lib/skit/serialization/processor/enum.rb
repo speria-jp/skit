@@ -29,7 +29,7 @@ module Skit
 
         sig { override.params(value: T.untyped).returns(T.untyped) }
         def serialize(value)
-          raise TypeMismatchError, "Expected #{@enum_class}, got #{value.class}" unless value.is_a?(@enum_class)
+          raise SerializeError, "Expected #{@enum_class}, got #{value.class}" unless value.is_a?(@enum_class)
 
           value.serialize
         end
@@ -42,7 +42,7 @@ module Skit
             @enum_class.deserialize(value)
           rescue KeyError
             valid_values = @enum_class.values.map(&:serialize)
-            raise DeserializationError,
+            raise DeserializeError,
                   "Invalid value #{value.inspect} for #{@enum_class}. " \
                   "Valid values: #{valid_values.inspect}"
           end

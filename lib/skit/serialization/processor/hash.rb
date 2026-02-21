@@ -25,7 +25,7 @@ module Skit
 
         sig { override.params(value: T.untyped).returns(T::Hash[::String, T.untyped]) }
         def serialize(value)
-          raise TypeMismatchError, "Expected Hash, got #{value.class}" unless value.is_a?(::Hash)
+          raise SerializeError, "Expected Hash, got #{value.class}" unless value.is_a?(::Hash)
 
           result = T.let({}, T::Hash[::String, T.untyped])
           value.each do |key, item|
@@ -37,7 +37,7 @@ module Skit
 
         sig { override.params(value: T.untyped).returns(T::Hash[T.untyped, T.untyped]) }
         def deserialize(value)
-          raise DeserializationError, "Expected Hash, got #{value.class}" unless value.is_a?(::Hash)
+          raise DeserializeError, "Expected Hash, got #{value.class}" unless value.is_a?(::Hash)
 
           result = T.let({}, T::Hash[T.untyped, T.untyped])
           value.each do |key, item|

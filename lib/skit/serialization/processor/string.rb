@@ -14,14 +14,14 @@ module Skit
 
         sig { override.params(value: T.untyped).returns(::String) }
         def serialize(value)
-          raise TypeMismatchError, "Expected String, got #{value.class}" unless value.is_a?(::String)
+          raise SerializeError, "Expected String, got #{value.class}" unless value.is_a?(::String)
 
           value
         end
 
         sig { override.params(value: T.untyped).returns(::String) }
         def deserialize(value)
-          raise DeserializationError, "Expected String, got #{value.class}" unless value.is_a?(::String)
+          raise DeserializeError, "Expected String, got #{value.class}" unless value.is_a?(::String)
 
           value
         end

@@ -3,8 +3,9 @@
 
 module Skit
   module Serialization
-    class UnknownTypeError < StandardError; end
-    class TypeMismatchError < StandardError; end
-    class DeserializationError < StandardError; end
+    class Error < Skit::Error; end
+    class UnknownTypeError < Error; end
+    class SerializeError < Error; end
+    class DeserializeError < Error; end
   end
 end

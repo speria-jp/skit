@@ -14,7 +14,7 @@ module Skit
 
         sig { override.params(value: T.untyped).returns(::Float) }
         def serialize(value)
-          raise TypeMismatchError, "Expected Float, got #{value.class}" unless value.is_a?(::Float)
+          raise SerializeError, "Expected Float, got #{value.class}" unless value.is_a?(::Float)
 
           value
         end
@@ -27,7 +27,7 @@ module Skit
           when ::Integer
             value.to_f
           else
-            raise DeserializationError, "Expected Float or Integer, got #{value.class}"
+            raise DeserializeError, "Expected Float or Integer, got #{value.class}"
           end
         end
       end

@@ -15,7 +15,7 @@ module Skit
         sig { override.params(value: T.untyped).returns(T::Boolean) }
         def serialize(value)
           unless value.is_a?(TrueClass) || value.is_a?(FalseClass)
-            raise TypeMismatchError, "Expected TrueClass or FalseClass, got #{value.class}"
+            raise SerializeError, "Expected TrueClass or FalseClass, got #{value.class}"
           end
 
           value
@@ -24,7 +24,7 @@ module Skit
         sig { override.params(value: T.untyped).returns(T::Boolean) }
         def deserialize(value)
           unless value.is_a?(TrueClass) || value.is_a?(FalseClass)
-            raise DeserializationError, "Expected TrueClass or FalseClass, got #{value.class}"
+            raise DeserializeError, "Expected TrueClass or FalseClass, got #{value.class}"
           end
 
           value

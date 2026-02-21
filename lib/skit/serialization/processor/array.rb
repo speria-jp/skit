@@ -24,7 +24,7 @@ module Skit
 
         sig { override.params(value: T.untyped).returns(T::Array[T.untyped]) }
         def serialize(value)
-          raise TypeMismatchError, "Expected Array, got #{value.class}" unless value.is_a?(::Array)
+          raise SerializeError, "Expected Array, got #{value.class}" unless value.is_a?(::Array)
 
           value.map do |item|
             processor = @registry.processor_for(@element_type)
@@ -34,7 +34,7 @@ module Skit
 
         sig { override.params(value: T.untyped).returns(T::Array[T.untyped]) }
         def deserialize(value)
-          raise DeserializationError, "Expected Array, got #{value.class}" unless value.is_a?(::Array)
+          raise DeserializeError, "Expected Array, got #{value.class}" unless value.is_a?(::Array)
 
           value.map do |item|
             processor = @registry.processor_for(@element_type)

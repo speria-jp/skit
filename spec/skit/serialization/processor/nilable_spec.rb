@@ -46,7 +46,7 @@ RSpec.describe Skit::Serialization::Processor::Nilable, type: :unit do
 
     it "raises error for type mismatch" do
       expect { processor.serialize(123) }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         /Expected String/
       )
     end
