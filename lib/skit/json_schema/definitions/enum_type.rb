@@ -45,28 +45,13 @@ module Skit
         def self.value_to_member_name(value)
           case value
           when String
-            # Convert string value to PascalCase
-            # "active" -> "Active", "my_status" -> "MyStatus", "foo-bar" -> "FooBar"
-            normalized = value.gsub(/[^a-zA-Z0-9]+/, "_")
-                              .gsub(/^_+|_+$/, "")
-            return "Empty" if normalized.empty?
+            result = NamingUtils.to_pascal_case(value)
+            return "Empty" if result.empty?
 
-            result = normalized.split("_").map(&:capitalize).join
-
-            # Prefix with "Val" if the result starts with a number (invalid Ruby constant)
             result = "Val#{result}" if result.match?(/\A\d/)
-
             result
-          when Integer
-            # For integers, prefix with "Val" to ensure valid constant name
-            # 1 -> "Val1", -5 -> "ValMinus5"
-            num_str = value.to_s.gsub("-", "Minus")
-            "Val#{num_str}"
-          when Float
-            # For floats, prefix with "Val" and handle decimal point
-            # 1.5 -> "Val1Dot5", -2.5 -> "ValMinus2Dot5"
-            num_str = value.to_s.gsub("-", "Minus").gsub(".", "Dot")
-            "Val#{num_str}"
+          when Integer, Float
+            NamingUtils.number_to_name(value)
           end
         end
 

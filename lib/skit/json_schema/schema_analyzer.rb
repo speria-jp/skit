@@ -243,17 +243,9 @@ module Skit
 
         value_suffix = case const_value
                        when String
-                         # Convert string value to PascalCase
-                         # "dog" -> "Dog", "my_value" -> "MyValue", "some-thing" -> "SomeThing"
-                         const_value.gsub(/[^a-zA-Z0-9]+/, "_")
-                                    .split("_")
-                                    .map(&:capitalize)
-                                    .join
+                         NamingUtils.to_pascal_case(const_value)
                        when Integer, Float
-                         # For numbers, prefix with "Val" to ensure valid class name
-                         # 200 -> "Val200", -1 -> "ValMinus1"
-                         num_str = const_value.to_s.gsub("-", "Minus").gsub(".", "Dot")
-                         "Val#{num_str}"
+                         NamingUtils.number_to_name(const_value)
                        when TrueClass
                          "True"
                        when FalseClass
