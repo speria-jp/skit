@@ -29,6 +29,11 @@ module Skit
           union_str = "T.any(#{@types.map(&:to_sorbet_type).join(", ")})"
           @nullable ? "T.nilable(#{union_str})" : union_str
         end
+
+        sig { returns(UnionPropertyType) }
+        def with_nullable
+          UnionPropertyType.new(types: @types, nullable: true)
+        end
       end
     end
   end

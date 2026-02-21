@@ -35,6 +35,11 @@ module Skit
           nullable ? "T.nilable(#{@class_name})" : @class_name
         end
 
+        sig { returns(EnumType) }
+        def with_nullable
+          EnumType.new(class_name: @class_name, values: @values, nullable: true)
+        end
+
         # Generate enum member name from value
         sig { params(value: T.any(String, Integer, Float)).returns(String) }
         def self.value_to_member_name(value)

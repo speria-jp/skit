@@ -38,6 +38,11 @@ module Skit
           nullable ? "T.nilable(#{@class_name})" : @class_name
         end
 
+        sig { returns(ConstType) }
+        def with_nullable
+          ConstType.new(class_name: @class_name, value: @value, nullable: true)
+        end
+
         # Returns the Ruby literal representation of the value
         # rubocop:disable Lint/DuplicateBranch -- Sorbet requires exhaustive case for proper return type
         sig { returns(String) }

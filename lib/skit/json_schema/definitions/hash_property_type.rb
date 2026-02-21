@@ -25,6 +25,11 @@ module Skit
           hash_type = "T::Hash[String, #{value_type_str}]"
           nullable ? "T.nilable(#{hash_type})" : hash_type
         end
+
+        sig { returns(HashPropertyType) }
+        def with_nullable
+          HashPropertyType.new(value_type: @value_type, nullable: true)
+        end
       end
     end
   end

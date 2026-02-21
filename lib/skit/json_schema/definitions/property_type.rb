@@ -28,6 +28,11 @@ module Skit
         def to_sorbet_type
           nullable ? "T.nilable(#{@base_type})" : @base_type
         end
+
+        sig { returns(PropertyType) }
+        def with_nullable
+          PropertyType.new(base_type: @base_type, nullable: true)
+        end
       end
     end
   end
