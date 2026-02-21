@@ -22,16 +22,16 @@ module Skit
           @raw_type = T.let(type_spec.raw_type, T.untyped)
         end
 
-        sig { override.params(value: T.untyped).returns(T.untyped) }
-        def serialize(value)
+        sig { override.params(value: T.untyped, path: Path).returns(T.untyped) }
+        def serialize(value, path: Path.new)
           processor = @registry.processor_for(@raw_type)
-          processor.serialize(value)
+          processor.serialize(value, path: path)
         end
 
-        sig { override.params(value: T.untyped).returns(T.untyped) }
-        def deserialize(value)
+        sig { override.params(value: T.untyped, path: Path).returns(T.untyped) }
+        def deserialize(value, path: Path.new)
           processor = @registry.processor_for(@raw_type)
-          processor.deserialize(value)
+          processor.deserialize(value, path: path)
         end
 
         sig do

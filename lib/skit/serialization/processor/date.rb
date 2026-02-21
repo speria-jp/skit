@@ -14,25 +14,25 @@ module Skit
           type_spec == ::Date
         end
 
-        sig { override.params(value: T.untyped).returns(::String) }
-        def serialize(value)
-          raise SerializeError, "Expected Date, got #{value.class}" unless value.is_a?(::Date)
+        sig { override.params(value: T.untyped, path: Path).returns(::String) }
+        def serialize(value, path: Path.new)
+          raise SerializeError.new("Expected Date, got #{value.class}", path: path) unless value.is_a?(::Date)
 
           value.iso8601
         end
 
-        sig { override.params(value: T.untyped).returns(::Date) }
-        def deserialize(value)
+        sig { override.params(value: T.untyped, path: Path).returns(::Date) }
+        def deserialize(value, path: Path.new)
           case value
           when ::Date
             value
           when ::String
             ::Date.iso8601(value)
           else
-            raise DeserializeError, "Expected Date or String, got #{value.class}"
+            raise DeserializeError.new("Expected Date or String, got #{value.class}", path: path)
           end
         rescue ArgumentError => e
-          raise DeserializeError, "Failed to deserialize Date: #{e.message}"
+          raise DeserializeError.new("Failed to deserialize Date: #{e.message}", path: path)
         end
       end
     end

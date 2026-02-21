@@ -23,20 +23,20 @@ module Skit
           @inner_type = T.let(extract_inner_type(type_spec), T.untyped)
         end
 
-        sig { override.params(value: T.untyped).returns(T.untyped) }
-        def serialize(value)
+        sig { override.params(value: T.untyped, path: Path).returns(T.untyped) }
+        def serialize(value, path: Path.new)
           return nil if value.nil?
 
           processor = @registry.processor_for(@inner_type)
-          processor.serialize(value)
+          processor.serialize(value, path: path)
         end
 
-        sig { override.params(value: T.untyped).returns(T.untyped) }
-        def deserialize(value)
+        sig { override.params(value: T.untyped, path: Path).returns(T.untyped) }
+        def deserialize(value, path: Path.new)
           return nil if value.nil?
 
           processor = @registry.processor_for(@inner_type)
-          processor.deserialize(value)
+          processor.deserialize(value, path: path)
         end
 
         sig do

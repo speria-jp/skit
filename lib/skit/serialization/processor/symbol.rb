@@ -12,18 +12,21 @@ module Skit
           type_spec == ::Symbol
         end
 
-        sig { override.params(value: T.untyped).returns(::String) }
-        def serialize(value)
-          raise SerializeError, "Expected Symbol, got #{value.class}" unless value.is_a?(::Symbol)
+        sig { override.params(value: T.untyped, path: Path).returns(::String) }
+        def serialize(value, path: Path.new)
+          raise SerializeError.new("Expected Symbol, got #{value.class}", path: path) unless value.is_a?(::Symbol)
 
           value.to_s
         end
 
-        sig { override.params(value: T.untyped).returns(::Symbol) }
-        def deserialize(value)
+        sig { override.params(value: T.untyped, path: Path).returns(::Symbol) }
+        def deserialize(value, path: Path.new)
           return value if value.is_a?(::Symbol)
 
-          raise DeserializeError, "Expected String or Symbol, got #{value.class}" unless value.is_a?(::String)
+          unless value.is_a?(::String)
+            raise DeserializeError.new("Expected String or Symbol, got #{value.class}",
+                                       path: path)
+          end
 
           value.to_sym
         end

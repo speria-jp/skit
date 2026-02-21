@@ -24,23 +24,26 @@ module Skit
           @struct_class = T.let(type_spec, T.class_of(T::Struct))
         end
 
-        sig { override.params(value: T.untyped).returns(T::Hash[::String, T.untyped]) }
-        def serialize(value)
-          raise SerializeError, "Expected #{@struct_class}, got #{value.class}" unless value.is_a?(@struct_class)
+        sig { override.params(value: T.untyped, path: Path).returns(T::Hash[::String, T.untyped]) }
+        def serialize(value, path: Path.new)
+          unless value.is_a?(@struct_class)
+            raise SerializeError.new("Expected #{@struct_class}, got #{value.class}",
+                                     path: path)
+          end
 
           @struct_class.props.each_with_object({}) do |(name, prop_def), hash|
             prop_value = value.public_send(name)
             prop_type = prop_def[:type_object]
             processor = @registry.processor_for(prop_type)
-            hash[name.to_s] = processor.serialize(prop_value)
+            hash[name.to_s] = processor.serialize(prop_value, path: path.append(name.to_s))
           end
         end
 
-        sig { override.params(value: T.untyped).returns(T::Struct) }
-        def deserialize(value)
+        sig { override.params(value: T.untyped, path: Path).returns(T::Struct) }
+        def deserialize(value, path: Path.new)
           return value if value.is_a?(@struct_class)
 
-          raise DeserializeError, "Expected Hash, got #{value.class}" unless value.is_a?(::Hash)
+          raise DeserializeError.new("Expected Hash, got #{value.class}", path: path) unless value.is_a?(::Hash)
 
           symbolized = value.transform_keys(&:to_sym)
 
@@ -50,7 +53,7 @@ module Skit
             prop_value = symbolized[name]
             prop_type = prop_def[:type_object]
             processor = @registry.processor_for(prop_type)
-            hash[name] = processor.deserialize(prop_value)
+            hash[name] = processor.deserialize(prop_value, path: path.append(name.to_s))
           end
 
           @struct_class.new(**deserialized)

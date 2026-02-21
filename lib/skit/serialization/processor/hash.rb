@@ -23,27 +23,27 @@ module Skit
           @value_type = T.let(type_spec.values, T.untyped)
         end
 
-        sig { override.params(value: T.untyped).returns(T::Hash[::String, T.untyped]) }
-        def serialize(value)
-          raise SerializeError, "Expected Hash, got #{value.class}" unless value.is_a?(::Hash)
+        sig { override.params(value: T.untyped, path: Path).returns(T::Hash[::String, T.untyped]) }
+        def serialize(value, path: Path.new)
+          raise SerializeError.new("Expected Hash, got #{value.class}", path: path) unless value.is_a?(::Hash)
 
           result = T.let({}, T::Hash[::String, T.untyped])
           value.each do |key, item|
             processor = @registry.processor_for(@value_type)
-            result[key.to_s] = processor.serialize(item)
+            result[key.to_s] = processor.serialize(item, path: path.append(key.to_s))
           end
           result
         end
 
-        sig { override.params(value: T.untyped).returns(T::Hash[T.untyped, T.untyped]) }
-        def deserialize(value)
-          raise DeserializeError, "Expected Hash, got #{value.class}" unless value.is_a?(::Hash)
+        sig { override.params(value: T.untyped, path: Path).returns(T::Hash[T.untyped, T.untyped]) }
+        def deserialize(value, path: Path.new)
+          raise DeserializeError.new("Expected Hash, got #{value.class}", path: path) unless value.is_a?(::Hash)
 
           result = T.let({}, T::Hash[T.untyped, T.untyped])
           value.each do |key, item|
             normalized_key = normalize_key(key)
             processor = @registry.processor_for(@value_type)
-            result[normalized_key] = processor.deserialize(item)
+            result[normalized_key] = processor.deserialize(item, path: path.append(key.to_s))
           end
           result
         end

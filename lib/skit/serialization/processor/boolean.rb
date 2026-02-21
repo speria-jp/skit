@@ -12,19 +12,19 @@ module Skit
           type_spec == T::Boolean
         end
 
-        sig { override.params(value: T.untyped).returns(T::Boolean) }
-        def serialize(value)
+        sig { override.params(value: T.untyped, path: Path).returns(T::Boolean) }
+        def serialize(value, path: Path.new)
           unless value.is_a?(TrueClass) || value.is_a?(FalseClass)
-            raise SerializeError, "Expected TrueClass or FalseClass, got #{value.class}"
+            raise SerializeError.new("Expected TrueClass or FalseClass, got #{value.class}", path: path)
           end
 
           value
         end
 
-        sig { override.params(value: T.untyped).returns(T::Boolean) }
-        def deserialize(value)
+        sig { override.params(value: T.untyped, path: Path).returns(T::Boolean) }
+        def deserialize(value, path: Path.new)
           unless value.is_a?(TrueClass) || value.is_a?(FalseClass)
-            raise DeserializeError, "Expected TrueClass or FalseClass, got #{value.class}"
+            raise DeserializeError.new("Expected TrueClass or FalseClass, got #{value.class}", path: path)
           end
 
           value

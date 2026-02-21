@@ -15,7 +15,7 @@ require_relative "skit/attribute"
 require_relative "skit/json_schema"
 require_relative "active_model/validations/skit_validator"
 
-module Skit
+module Skit # rubocop:disable Style/OneClassPerFile
   extend T::Sig
 
   # Serialize a T::Struct instance to a Hash with string keys.

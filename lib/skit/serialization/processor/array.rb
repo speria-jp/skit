@@ -22,23 +22,23 @@ module Skit
           @element_type = T.let(type_spec.type, T.untyped)
         end
 
-        sig { override.params(value: T.untyped).returns(T::Array[T.untyped]) }
-        def serialize(value)
-          raise SerializeError, "Expected Array, got #{value.class}" unless value.is_a?(::Array)
+        sig { override.params(value: T.untyped, path: Path).returns(T::Array[T.untyped]) }
+        def serialize(value, path: Path.new)
+          raise SerializeError.new("Expected Array, got #{value.class}", path: path) unless value.is_a?(::Array)
 
-          value.map do |item|
+          value.each_with_index.map do |item, index|
             processor = @registry.processor_for(@element_type)
-            processor.serialize(item)
+            processor.serialize(item, path: path.append(index))
           end
         end
 
-        sig { override.params(value: T.untyped).returns(T::Array[T.untyped]) }
-        def deserialize(value)
-          raise DeserializeError, "Expected Array, got #{value.class}" unless value.is_a?(::Array)
+        sig { override.params(value: T.untyped, path: Path).returns(T::Array[T.untyped]) }
+        def deserialize(value, path: Path.new)
+          raise DeserializeError.new("Expected Array, got #{value.class}", path: path) unless value.is_a?(::Array)
 
-          value.map do |item|
+          value.each_with_index.map do |item, index|
             processor = @registry.processor_for(@element_type)
-            processor.deserialize(item)
+            processor.deserialize(item, path: path.append(index))
           end
         end
 

@@ -21,13 +21,13 @@ module Skit
           @registry = T.let(registry, Registry)
         end
 
-        sig { overridable.params(value: T.untyped).returns(T.untyped) }
-        def serialize(value)
+        sig { overridable.params(value: T.untyped, path: Path).returns(T.untyped) }
+        def serialize(value, path: Path.new)
           raise NotImplementedError, "#{self.class}#serialize must be implemented"
         end
 
-        sig { overridable.params(value: T.untyped).returns(T.untyped) }
-        def deserialize(value)
+        sig { overridable.params(value: T.untyped, path: Path).returns(T.untyped) }
+        def deserialize(value, path: Path.new)
           raise NotImplementedError, "#{self.class}#deserialize must be implemented"
         end
 

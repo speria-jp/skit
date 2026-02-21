@@ -12,16 +12,16 @@ module Skit
           type_spec == ::Integer
         end
 
-        sig { override.params(value: T.untyped).returns(::Integer) }
-        def serialize(value)
-          raise SerializeError, "Expected Integer, got #{value.class}" unless value.is_a?(::Integer)
+        sig { override.params(value: T.untyped, path: Path).returns(::Integer) }
+        def serialize(value, path: Path.new)
+          raise SerializeError.new("Expected Integer, got #{value.class}", path: path) unless value.is_a?(::Integer)
 
           value
         end
 
-        sig { override.params(value: T.untyped).returns(::Integer) }
-        def deserialize(value)
-          raise DeserializeError, "Expected Integer, got #{value.class}" unless value.is_a?(::Integer)
+        sig { override.params(value: T.untyped, path: Path).returns(::Integer) }
+        def deserialize(value, path: Path.new)
+          raise DeserializeError.new("Expected Integer, got #{value.class}", path: path) unless value.is_a?(::Integer)
 
           value
         end
