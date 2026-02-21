@@ -3,6 +3,10 @@
 
 require "sorbet-runtime"
 
+module Skit
+  class Error < StandardError; end
+end
+
 require_relative "skit/version"
 # Load JsonSchema::Types::Const early so it can be used by serialization processors
 require_relative "skit/json_schema/types/const"
@@ -13,8 +17,6 @@ require_relative "active_model/validations/skit_validator"
 
 module Skit
   extend T::Sig
-
-  class Error < StandardError; end
 
   # Serialize a T::Struct instance to a Hash with string keys.
   #

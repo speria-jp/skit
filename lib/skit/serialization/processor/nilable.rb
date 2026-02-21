@@ -42,11 +42,11 @@ module Skit
         sig do
           override.params(
             value: T.untyped,
-            path: ::String,
-            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: ::String).void
+            path: Path,
+            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: Path).void
           ).void
         end
-        def traverse(value, path: "", &blk)
+        def traverse(value, path: Path.new, &blk)
           super
 
           return if value.nil?

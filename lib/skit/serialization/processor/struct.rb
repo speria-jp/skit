@@ -59,11 +59,11 @@ module Skit
         sig do
           override.params(
             value: T.untyped,
-            path: ::String,
-            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: ::String).void
+            path: Path,
+            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: Path).void
           ).void
         end
-        def traverse(value, path: "", &blk)
+        def traverse(value, path: Path.new, &blk)
           super
 
           return unless value.is_a?(@struct_class)
@@ -72,8 +72,7 @@ module Skit
             prop_value = value.public_send(name)
             prop_type = prop_def[:type_object]
             processor = @registry.processor_for(prop_type)
-            prop_path = path.empty? ? name.to_s : "#{path}.#{name}"
-            processor.traverse(prop_value, path: prop_path, &blk)
+            processor.traverse(prop_value, path: path.append(name.to_s), &blk)
           end
         end
       end

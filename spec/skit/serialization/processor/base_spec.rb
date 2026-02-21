@@ -47,12 +47,13 @@ RSpec.describe Skit::Serialization::Processor::Base, type: :unit do
       registry = Skit::Serialization::Registry.new
       processor = ConcreteProcessor.new(String, registry: registry)
 
+      given_path = Skit::Serialization::Path.new(%w[some path])
       called_with = []
-      processor.traverse("test value", path: "some.path") do |type_spec, node, path|
+      processor.traverse("test value", path: given_path) do |type_spec, node, path|
         called_with << [type_spec, node, path]
       end
 
-      expect(called_with).to eq([[String, "test value", "some.path"]])
+      expect(called_with).to eq([[String, "test value", given_path]])
     end
   end
 end

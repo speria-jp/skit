@@ -51,19 +51,18 @@ module Skit
         sig do
           override.params(
             value: T.untyped,
-            path: ::String,
-            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: ::String).void
+            path: Path,
+            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: Path).void
           ).void
         end
-        def traverse(value, path: "", &blk)
+        def traverse(value, path: Path.new, &blk)
           super
 
           return unless value.is_a?(::Hash)
 
           value.each do |key, val|
             processor = @registry.processor_for(@value_type)
-            val_path = path.empty? ? key.to_s : "#{path}.#{key}"
-            processor.traverse(val, path: val_path, &blk)
+            processor.traverse(val, path: path.append(key.to_s), &blk)
           end
         end
 
