@@ -42,9 +42,7 @@ module Skit
         def deserialize(value)
           return value if value_is_union_member?(value)
 
-          unless value.is_a?(::Hash)
-            raise DeserializeError, "Expected Hash or union member struct, got #{value.class}"
-          end
+          raise DeserializeError, "Expected Hash or union member struct, got #{value.class}" unless value.is_a?(::Hash)
 
           @struct_classes.each do |struct_class|
             result = try_deserialize(value, struct_class)
