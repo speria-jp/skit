@@ -21,24 +21,24 @@ module Skit
           @registry = T.let(registry, Registry)
         end
 
-        sig { overridable.params(value: T.untyped).returns(T.untyped) }
-        def serialize(value)
+        sig { overridable.params(value: T.untyped, path: Path).returns(T.untyped) }
+        def serialize(value, path: Path.new)
           raise NotImplementedError, "#{self.class}#serialize must be implemented"
         end
 
-        sig { overridable.params(value: T.untyped).returns(T.untyped) }
-        def deserialize(value)
+        sig { overridable.params(value: T.untyped, path: Path).returns(T.untyped) }
+        def deserialize(value, path: Path.new)
           raise NotImplementedError, "#{self.class}#deserialize must be implemented"
         end
 
         sig do
           overridable.params(
             value: T.untyped,
-            path: ::String,
-            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: ::String).void
+            path: Path,
+            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: Path).void
           ).void
         end
-        def traverse(value, path: "", &blk)
+        def traverse(value, path: Path.new, &blk)
           blk.call(@type_spec, value, path)
         end
       end

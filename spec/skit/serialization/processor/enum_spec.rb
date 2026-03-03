@@ -66,7 +66,7 @@ RSpec.describe Skit::Serialization::Processor::Enum, type: :unit do
     it "raises error for non-enum values" do
       expect do
         string_enum_processor.serialize("active")
-      end.to raise_error(Skit::Serialization::TypeMismatchError, /Expected TestStatus/)
+      end.to raise_error(Skit::Serialization::SerializeError, /Expected TestStatus/)
     end
   end
 
@@ -94,7 +94,7 @@ RSpec.describe Skit::Serialization::Processor::Enum, type: :unit do
     it "raises error for invalid value" do
       expect do
         string_enum_processor.deserialize("invalid")
-      end.to raise_error(Skit::Serialization::DeserializationError, /Invalid value "invalid" for TestStatus/)
+      end.to raise_error(Skit::Serialization::DeserializeError, /Invalid value "invalid" for TestStatus/)
     end
   end
 end

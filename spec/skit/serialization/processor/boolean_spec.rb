@@ -30,15 +30,15 @@ RSpec.describe Skit::Serialization::Processor::Boolean, type: :unit do
 
     it "raises error for non-boolean values" do
       expect { processor.serialize(1) }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         "Expected TrueClass or FalseClass, got Integer"
       )
       expect { processor.serialize("true") }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         "Expected TrueClass or FalseClass, got String"
       )
       expect { processor.serialize(nil) }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         "Expected TrueClass or FalseClass, got NilClass"
       )
     end
@@ -55,15 +55,15 @@ RSpec.describe Skit::Serialization::Processor::Boolean, type: :unit do
 
     it "raises error for non-boolean values" do
       expect { processor.deserialize(1) }.to raise_error(
-        Skit::Serialization::DeserializationError,
+        Skit::Serialization::DeserializeError,
         "Expected TrueClass or FalseClass, got Integer"
       )
       expect { processor.deserialize("true") }.to raise_error(
-        Skit::Serialization::DeserializationError,
+        Skit::Serialization::DeserializeError,
         "Expected TrueClass or FalseClass, got String"
       )
       expect { processor.deserialize(nil) }.to raise_error(
-        Skit::Serialization::DeserializationError,
+        Skit::Serialization::DeserializeError,
         "Expected TrueClass or FalseClass, got NilClass"
       )
     end

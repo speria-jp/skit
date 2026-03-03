@@ -104,23 +104,23 @@ RSpec.describe Skit::Serialization::Processor::JsonSchemaConst, type: :unit do
     end
 
     context "with wrong type" do
-      it "raises TypeMismatchError for wrong const class" do
+      it "raises SerializeError for wrong const class" do
         cat_instance = JsonSchemaConstSpecTestClasses::CatType.new
         expect { dog_processor.serialize(cat_instance) }.to raise_error(
-          Skit::Serialization::TypeMismatchError,
+          Skit::Serialization::SerializeError,
           /Expected.*DogType.*got.*CatType/
         )
       end
 
-      it "raises TypeMismatchError for nil" do
+      it "raises SerializeError for nil" do
         expect { dog_processor.serialize(nil) }.to raise_error(
-          Skit::Serialization::TypeMismatchError
+          Skit::Serialization::SerializeError
         )
       end
 
-      it "raises TypeMismatchError for raw value" do
+      it "raises SerializeError for raw value" do
         expect { dog_processor.serialize("dog") }.to raise_error(
-          Skit::Serialization::TypeMismatchError
+          Skit::Serialization::SerializeError
         )
       end
     end
@@ -134,9 +134,9 @@ RSpec.describe Skit::Serialization::Processor::JsonSchemaConst, type: :unit do
         expect(result.value).to eq("dog")
       end
 
-      it "raises DeserializationError when value does not match" do
+      it "raises DeserializeError when value does not match" do
         expect { dog_processor.deserialize("cat") }.to raise_error(
-          Skit::Serialization::DeserializationError,
+          Skit::Serialization::DeserializeError,
           /Expected "dog", got "cat"/
         )
       end
@@ -149,16 +149,16 @@ RSpec.describe Skit::Serialization::Processor::JsonSchemaConst, type: :unit do
         expect(result.value).to eq(200)
       end
 
-      it "raises DeserializationError when value does not match" do
+      it "raises DeserializeError when value does not match" do
         expect { status_processor.deserialize(404) }.to raise_error(
-          Skit::Serialization::DeserializationError,
+          Skit::Serialization::DeserializeError,
           /Expected 200, got 404/
         )
       end
 
-      it "raises DeserializationError for string representation of number" do
+      it "raises DeserializeError for string representation of number" do
         expect { status_processor.deserialize("200") }.to raise_error(
-          Skit::Serialization::DeserializationError
+          Skit::Serialization::DeserializeError
         )
       end
     end
@@ -169,9 +169,9 @@ RSpec.describe Skit::Serialization::Processor::JsonSchemaConst, type: :unit do
         expect(result).to be_a(JsonSchemaConstSpecTestClasses::PriceMultiplier)
       end
 
-      it "raises DeserializationError when value does not match" do
+      it "raises DeserializeError when value does not match" do
         expect { float_processor.deserialize(2.0) }.to raise_error(
-          Skit::Serialization::DeserializationError
+          Skit::Serialization::DeserializeError
         )
       end
     end
@@ -187,15 +187,15 @@ RSpec.describe Skit::Serialization::Processor::JsonSchemaConst, type: :unit do
         expect(result).to be_a(JsonSchemaConstSpecTestClasses::DisabledFlag)
       end
 
-      it "raises DeserializationError when true expected but false given" do
+      it "raises DeserializeError when true expected but false given" do
         expect { true_processor.deserialize(false) }.to raise_error(
-          Skit::Serialization::DeserializationError
+          Skit::Serialization::DeserializeError
         )
       end
 
-      it "raises DeserializationError when false expected but true given" do
+      it "raises DeserializeError when false expected but true given" do
         expect { false_processor.deserialize(true) }.to raise_error(
-          Skit::Serialization::DeserializationError
+          Skit::Serialization::DeserializeError
         )
       end
     end

@@ -149,7 +149,7 @@ RSpec.describe "Complex object serialization", type: :integration do
 
       expect do
         Skit.deserialize(data, ConstTypeTest::Dog)
-      end.to raise_error(Skit::Serialization::DeserializationError, /Expected "dog", got "cat"/)
+      end.to raise_error(Skit::Serialization::DeserializeError, /Expected "dog", got "cat"/)
     end
   end
 
@@ -217,7 +217,7 @@ RSpec.describe "Complex object serialization", type: :integration do
 
       expect do
         Skit.deserialize(data, EnumTypeTest::Task)
-      end.to raise_error(Skit::Serialization::DeserializationError, /Invalid value "unknown"/)
+      end.to raise_error(Skit::Serialization::DeserializeError, /Invalid value "unknown"/)
     end
   end
 
@@ -303,7 +303,7 @@ RSpec.describe "Complex object serialization", type: :integration do
 
       expect do
         Skit.deserialize(data, DiscriminatedUnionTest::Container)
-      end.to raise_error(Skit::Serialization::DeserializationError, /No matching struct found/)
+      end.to raise_error(Skit::Serialization::DeserializeError, /No matching struct found/)
     end
 
     it "round-trips discriminated union data" do

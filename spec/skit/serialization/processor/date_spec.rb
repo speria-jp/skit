@@ -27,15 +27,15 @@ RSpec.describe Skit::Serialization::Processor::Date, type: :unit do
 
     it "raises error for non-Date values" do
       expect { processor.serialize("2025-01-15") }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         "Expected Date, got String"
       )
       expect { processor.serialize(Time.now) }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         "Expected Date, got Time"
       )
       expect { processor.serialize(nil) }.to raise_error(
-        Skit::Serialization::TypeMismatchError,
+        Skit::Serialization::SerializeError,
         "Expected Date, got NilClass"
       )
     end
@@ -54,18 +54,18 @@ RSpec.describe Skit::Serialization::Processor::Date, type: :unit do
 
     it "raises error for invalid date string" do
       expect { processor.deserialize("invalid") }.to raise_error(
-        Skit::Serialization::DeserializationError,
+        Skit::Serialization::DeserializeError,
         /Failed to deserialize Date/
       )
     end
 
     it "raises error for non-Date/String values" do
       expect { processor.deserialize(123) }.to raise_error(
-        Skit::Serialization::DeserializationError,
+        Skit::Serialization::DeserializeError,
         "Expected Date or String, got Integer"
       )
       expect { processor.deserialize(nil) }.to raise_error(
-        Skit::Serialization::DeserializationError,
+        Skit::Serialization::DeserializeError,
         "Expected Date or String, got NilClass"
       )
     end

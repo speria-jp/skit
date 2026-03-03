@@ -62,16 +62,16 @@ RSpec.describe Skit::Attribute, type: :unit do
     end
 
     context "when value is invalid" do
-      it "raises DeserializationError for string values" do
+      it "raises DeserializeError for string values" do
         expect { type.cast("invalid") }.to raise_error(
-          Skit::Serialization::DeserializationError,
+          Skit::Serialization::DeserializeError,
           /Expected Hash/
         )
       end
 
-      it "raises DeserializationError for numeric values" do
+      it "raises DeserializeError for numeric values" do
         expect { type.cast(123) }.to raise_error(
-          Skit::Serialization::DeserializationError,
+          Skit::Serialization::DeserializeError,
           /Expected Hash/
         )
       end
@@ -117,9 +117,9 @@ RSpec.describe Skit::Attribute, type: :unit do
     end
 
     context "with invalid JSON" do
-      it "raises DeserializationError for numeric JSON" do
+      it "raises DeserializeError for numeric JSON" do
         expect { type.deserialize("123") }.to raise_error(
-          Skit::Serialization::DeserializationError,
+          Skit::Serialization::DeserializeError,
           /Expected Hash/
         )
       end

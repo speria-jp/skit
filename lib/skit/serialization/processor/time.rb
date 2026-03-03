@@ -14,25 +14,25 @@ module Skit
           type_spec == ::Time
         end
 
-        sig { override.params(value: T.untyped).returns(::String) }
-        def serialize(value)
-          raise TypeMismatchError, "Expected Time, got #{value.class}" unless value.is_a?(::Time)
+        sig { override.params(value: T.untyped, path: Path).returns(::String) }
+        def serialize(value, path: Path.new)
+          raise SerializeError.new("Expected Time, got #{value.class}", path: path) unless value.is_a?(::Time)
 
           value.iso8601
         end
 
-        sig { override.params(value: T.untyped).returns(::Time) }
-        def deserialize(value)
+        sig { override.params(value: T.untyped, path: Path).returns(::Time) }
+        def deserialize(value, path: Path.new)
           case value
           when ::Time
             value
           when ::String
             ::Time.iso8601(value)
           else
-            raise DeserializationError, "Expected Time or String, got #{value.class}"
+            raise DeserializeError.new("Expected Time or String, got #{value.class}", path: path)
           end
         rescue ArgumentError => e
-          raise DeserializationError, "Failed to deserialize Time: #{e.message}"
+          raise DeserializeError.new("Failed to deserialize Time: #{e.message}", path: path)
         end
       end
     end

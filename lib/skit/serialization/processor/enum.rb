@@ -4,9 +4,6 @@
 module Skit
   module Serialization
     module Processor
-      # Processor for T::Enum subclasses.
-      #
-      # Serializes to the serialize value, deserializes by matching the value.
       class Enum < Base
         extend T::Sig
 
@@ -27,24 +24,28 @@ module Skit
           @enum_class = T.let(type_spec, T.class_of(T::Enum))
         end
 
-        sig { override.params(value: T.untyped).returns(T.untyped) }
-        def serialize(value)
-          raise TypeMismatchError, "Expected #{@enum_class}, got #{value.class}" unless value.is_a?(@enum_class)
+        sig { override.params(value: T.untyped, path: Path).returns(T.untyped) }
+        def serialize(value, path: Path.new)
+          unless value.is_a?(@enum_class)
+            raise SerializeError.new("Expected #{@enum_class}, got #{value.class}",
+                                     path: path)
+          end
 
           value.serialize
         end
 
-        sig { override.params(value: T.untyped).returns(T::Enum) }
-        def deserialize(value)
+        sig { override.params(value: T.untyped, path: Path).returns(T::Enum) }
+        def deserialize(value, path: Path.new)
           return value if value.is_a?(@enum_class)
 
           begin
             @enum_class.deserialize(value)
           rescue KeyError
             valid_values = @enum_class.values.map(&:serialize)
-            raise DeserializationError,
-                  "Invalid value #{value.inspect} for #{@enum_class}. " \
-                  "Valid values: #{valid_values.inspect}"
+            raise DeserializeError.new(
+              "Invalid value #{value.inspect} for #{@enum_class}. Valid values: #{valid_values.inspect}",
+              path: path
+            )
           end
         end
       end

@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require_relative "serialization/errors"
+require_relative "serialization/path"
 require_relative "serialization/processor/base"
 require_relative "serialization/registry"
 

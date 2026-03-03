@@ -22,42 +22,41 @@ module Skit
           @element_type = T.let(type_spec.type, T.untyped)
         end
 
-        sig { override.params(value: T.untyped).returns(T::Array[T.untyped]) }
-        def serialize(value)
-          raise TypeMismatchError, "Expected Array, got #{value.class}" unless value.is_a?(::Array)
+        sig { override.params(value: T.untyped, path: Path).returns(T::Array[T.untyped]) }
+        def serialize(value, path: Path.new)
+          raise SerializeError.new("Expected Array, got #{value.class}", path: path) unless value.is_a?(::Array)
 
-          value.map do |item|
+          value.each_with_index.map do |item, index|
             processor = @registry.processor_for(@element_type)
-            processor.serialize(item)
+            processor.serialize(item, path: path.append(index))
           end
         end
 
-        sig { override.params(value: T.untyped).returns(T::Array[T.untyped]) }
-        def deserialize(value)
-          raise DeserializationError, "Expected Array, got #{value.class}" unless value.is_a?(::Array)
+        sig { override.params(value: T.untyped, path: Path).returns(T::Array[T.untyped]) }
+        def deserialize(value, path: Path.new)
+          raise DeserializeError.new("Expected Array, got #{value.class}", path: path) unless value.is_a?(::Array)
 
-          value.map do |item|
+          value.each_with_index.map do |item, index|
             processor = @registry.processor_for(@element_type)
-            processor.deserialize(item)
+            processor.deserialize(item, path: path.append(index))
           end
         end
 
         sig do
           override.params(
             value: T.untyped,
-            path: ::String,
-            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: ::String).void
+            path: Path,
+            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: Path).void
           ).void
         end
-        def traverse(value, path: "", &blk)
+        def traverse(value, path: Path.new, &blk)
           super
 
           return unless value.is_a?(::Array)
 
           value.each_with_index do |item, index|
             processor = @registry.processor_for(@element_type)
-            item_path = "#{path}[#{index}]"
-            processor.traverse(item, path: item_path, &blk)
+            processor.traverse(item, path: path.append(index), &blk)
           end
         end
       end

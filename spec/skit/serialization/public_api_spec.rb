@@ -128,7 +128,7 @@ RSpec.describe Skit, type: :unit do
 
     it "raises error for invalid type" do
       expect { described_class.deserialize("not a hash", PublicApiTestClasses::Address) }.to raise_error(
-        Skit::Serialization::DeserializationError
+        Skit::Serialization::DeserializeError
       )
     end
   end

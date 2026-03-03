@@ -25,33 +25,39 @@ module Skit
           )
         end
 
-        sig { override.params(value: T.untyped).returns(T::Hash[::String, T.untyped]) }
-        def serialize(value)
+        sig { override.params(value: T.untyped, path: Path).returns(T::Hash[::String, T.untyped]) }
+        def serialize(value, path: Path.new)
           struct_class = find_struct_class_for_value(value)
 
           unless struct_class
-            raise TypeMismatchError,
-                  "#{value.class} is not a member of this union: #{@struct_classes.map(&:name).join(", ")}"
+            raise SerializeError.new(
+              "#{value.class} is not a member of this union: #{@struct_classes.map(&:name).join(", ")}",
+              path: path
+            )
           end
 
           processor = @registry.processor_for(struct_class)
-          processor.serialize(value)
+          processor.serialize(value, path: path)
         end
 
-        sig { override.params(value: T.untyped).returns(T.untyped) }
-        def deserialize(value)
+        sig { override.params(value: T.untyped, path: Path).returns(T.untyped) }
+        def deserialize(value, path: Path.new)
           return value if value_is_union_member?(value)
 
           unless value.is_a?(::Hash)
-            raise DeserializationError, "Expected Hash or union member struct, got #{value.class}"
+            raise DeserializeError.new("Expected Hash or union member struct, got #{value.class}",
+                                       path: path)
           end
 
           @struct_classes.each do |struct_class|
-            result = try_deserialize(value, struct_class)
+            result = try_deserialize(value, struct_class, path: path)
             return result if result
           end
 
-          raise DeserializationError, "No matching struct found for union: #{@struct_classes.map(&:name).join(", ")}"
+          raise DeserializeError.new(
+            "No matching struct found for union: #{@struct_classes.map(&:name).join(", ")}",
+            path: path
+          )
         end
 
         class << self
@@ -95,11 +101,17 @@ module Skit
           @struct_classes.any? { |klass| value.is_a?(klass) }
         end
 
-        sig { params(value: T::Hash[T.untyped, T.untyped], struct_class: T.class_of(T::Struct)).returns(T.nilable(T::Struct)) }
-        def try_deserialize(value, struct_class)
+        sig do
+          params(
+            value: T::Hash[T.untyped, T.untyped],
+            struct_class: T.class_of(T::Struct),
+            path: Path
+          ).returns(T.nilable(T::Struct))
+        end
+        def try_deserialize(value, struct_class, path: Path.new)
           processor = @registry.processor_for(struct_class)
-          processor.deserialize(value)
-        rescue TypeMismatchError, DeserializationError, ArgumentError, TypeError
+          processor.deserialize(value, path: path)
+        rescue SerializeError, DeserializeError, ArgumentError, TypeError
           nil
         end
       end

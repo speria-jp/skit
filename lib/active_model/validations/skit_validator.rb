@@ -14,7 +14,7 @@ module ActiveModel
         return unless attribute_type
 
         processor = attribute_type.processor
-        processor.traverse(value, path: "") do |_type_spec, node, path|
+        processor.traverse(value) do |_type_spec, node, path|
           next unless node.respond_to?(:valid?)
           next if node.valid?
 
@@ -27,7 +27,13 @@ module ActiveModel
 
       private
 
-      sig { params(attribute: T.any(::String, Symbol), path: ::String, error_attribute: Symbol).returns(::String) }
+      sig do
+        params(
+          attribute: T.any(::String, Symbol),
+          path: Skit::Serialization::Path,
+          error_attribute: Symbol
+        ).returns(::String)
+      end
       def build_error_key(attribute, path, error_attribute)
         if path.empty?
           "#{attribute}.#{error_attribute}"

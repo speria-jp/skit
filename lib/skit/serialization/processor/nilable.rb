@@ -23,30 +23,30 @@ module Skit
           @inner_type = T.let(extract_inner_type(type_spec), T.untyped)
         end
 
-        sig { override.params(value: T.untyped).returns(T.untyped) }
-        def serialize(value)
+        sig { override.params(value: T.untyped, path: Path).returns(T.untyped) }
+        def serialize(value, path: Path.new)
           return nil if value.nil?
 
           processor = @registry.processor_for(@inner_type)
-          processor.serialize(value)
+          processor.serialize(value, path: path)
         end
 
-        sig { override.params(value: T.untyped).returns(T.untyped) }
-        def deserialize(value)
+        sig { override.params(value: T.untyped, path: Path).returns(T.untyped) }
+        def deserialize(value, path: Path.new)
           return nil if value.nil?
 
           processor = @registry.processor_for(@inner_type)
-          processor.deserialize(value)
+          processor.deserialize(value, path: path)
         end
 
         sig do
           override.params(
             value: T.untyped,
-            path: ::String,
-            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: ::String).void
+            path: Path,
+            blk: T.proc.params(type_spec: T.untyped, node: T.untyped, path: Path).void
           ).void
         end
-        def traverse(value, path: "", &blk)
+        def traverse(value, path: Path.new, &blk)
           super
 
           return if value.nil?
