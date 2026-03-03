@@ -7,8 +7,6 @@ A Ruby gem that integrates JSON Schema with Sorbet T::Struct. Generate type-safe
 - **JSON Schema to Code**: Generate Sorbet T::Struct definitions from JSON Schema
 - **Type-Safe Serialization**: Seamless conversion between T::Struct and JSON
 - **ActiveRecord Integration**: Store T::Struct in JSON/JSONB columns with full type safety
-- **Validation**: Automatic validation with indexed error messages for nested structures
-- **Database Agnostic**: PostgreSQL, MySQL, and SQLite support
 
 ## Installation
 
@@ -199,6 +197,43 @@ hash = Skit.serialize(product)
 # => {"name" => "Ruby Book", "price" => 3000, "tags" => ["programming", "ruby"]}
 ```
 
+#### Union Types (T.any)
+
+Union types with T::Struct variants are automatically resolved during deserialization:
+
+```ruby
+class TypeDog < Skit::JsonSchema::Types::Const
+  VALUE = "dog"
+end
+
+class TypeCat < Skit::JsonSchema::Types::Const
+  VALUE = "cat"
+end
+
+class Dog < T::Struct
+  const :type, TypeDog
+  const :breed, String
+end
+
+class Cat < T::Struct
+  const :type, TypeCat
+  const :color, String
+end
+
+class Pet < T::Struct
+  const :animal, T.any(Dog, Cat)
+end
+
+# Deserialize: tries each variant, Const values discriminate the match
+data = { "animal" => { "type" => "dog", "breed" => "Shiba" } }
+pet = Skit.deserialize(data, Pet)
+pet.animal # => Dog instance
+
+# Serialize: detects the actual struct class
+hash = Skit.serialize(pet)
+# => {"animal" => {"type" => "dog", "breed" => "Shiba"}}
+```
+
 ### 3. ActiveRecord JSONB Integration
 
 ```ruby
@@ -377,6 +412,9 @@ cart.errors[:"items.[1].name"]  # => ["can't be blank"]
 | `T::Array[T]` | `array` |
 | `T::Hash[String, T]` | `object` |
 | `T.nilable(T)` | type or `null` |
+| `T.any(Struct1, Struct2)` | `object` (resolved by matching variant) |
+| `T::Enum` | serialized value (e.g. `"active"`) |
+| `Skit::JsonSchema::Types::Const` | constant value (e.g. `"dog"`) |
 
 ## CLI Reference
 
