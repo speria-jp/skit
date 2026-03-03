@@ -87,6 +87,10 @@ Style/MultilineBlockChain:
   Exclude:
     - "spec/**/*"
 
+Style/OneClassPerFile:
+  Exclude:
+    - "spec/**/*"
+
 # Naming
 Naming/FileName:
   Exclude:
