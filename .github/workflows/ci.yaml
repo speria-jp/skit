@@ -55,5 +55,4 @@ jobs:
 
       - name: Run Sorbet type check
         run: |
-          bundle exec rake sorbet:update
           bundle exec srb tc

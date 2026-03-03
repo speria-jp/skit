@@ -12,11 +12,6 @@ Gemfile.lock
 # RSpec
 /spec/examples.txt
 
-# Sorbet
-/sorbet/rbi/gems/
-/sorbet/rbi/annotations/
-/sorbet/rbi/dsl/
-
 # Build artifacts
 /*.gem
 /pkg/
