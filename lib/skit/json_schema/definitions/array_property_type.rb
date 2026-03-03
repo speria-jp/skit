@@ -25,6 +25,11 @@ module Skit
           array_type = "T::Array[#{item_type_str}]"
           nullable ? "T.nilable(#{array_type})" : array_type
         end
+
+        sig { returns(ArrayPropertyType) }
+        def with_nullable
+          ArrayPropertyType.new(item_type: @item_type, nullable: true)
+        end
       end
     end
   end

@@ -243,17 +243,9 @@ module Skit
 
         value_suffix = case const_value
                        when String
-                         # Convert string value to PascalCase
-                         # "dog" -> "Dog", "my_value" -> "MyValue", "some-thing" -> "SomeThing"
-                         const_value.gsub(/[^a-zA-Z0-9]+/, "_")
-                                    .split("_")
-                                    .map(&:capitalize)
-                                    .join
+                         NamingUtils.to_pascal_case(const_value)
                        when Integer, Float
-                         # For numbers, prefix with "Val" to ensure valid class name
-                         # 200 -> "Val200", -1 -> "ValMinus1"
-                         num_str = const_value.to_s.gsub("-", "Minus").gsub(".", "Dot")
-                         "Val#{num_str}"
+                         NamingUtils.number_to_name(const_value)
                        when TrueClass
                          "True"
                        when FalseClass
@@ -373,33 +365,7 @@ module Skit
 
       sig { params(property_type: Definitions::PropertyTypes).returns(Definitions::PropertyTypes) }
       def make_nullable(property_type)
-        case property_type
-        when Definitions::ArrayPropertyType
-          Definitions::ArrayPropertyType.new(item_type: property_type.item_type, nullable: true)
-        when Definitions::HashPropertyType
-          Definitions::HashPropertyType.new(value_type: property_type.value_type, nullable: true)
-        when Definitions::UnionPropertyType
-          Definitions::UnionPropertyType.new(types: property_type.types, nullable: true)
-        when Definitions::ConstType
-          Definitions::ConstType.new(
-            class_name: property_type.class_name,
-            value: property_type.value,
-            nullable: true
-          )
-        when Definitions::EnumType
-          Definitions::EnumType.new(
-            class_name: property_type.class_name,
-            values: property_type.values,
-            nullable: true
-          )
-        when Definitions::PropertyType
-          Definitions::PropertyType.new(
-            base_type: property_type.base_type,
-            nullable: true
-          )
-        else
-          T.absurd(property_type)
-        end
+        property_type.with_nullable
       end
 
       sig { params(schema: T::Hash[String, T.untyped]).returns(T.nilable(String)) }

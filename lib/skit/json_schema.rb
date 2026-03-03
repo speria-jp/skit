@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require_relative "json_schema/types/const"
+require_relative "json_schema/naming_utils"
 require_relative "json_schema/definitions/property_type"
 require_relative "json_schema/definitions/const_type"
 require_relative "json_schema/definitions/enum_type"

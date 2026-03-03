@@ -13,25 +13,14 @@ module Skit
 
       sig { params(title: String).returns(ClassNamePath) }
       def self.title_to_class_name(title)
-        # Convert title to valid class name
-        # 1. Insert underscores before uppercase letters to properly split PascalCase
-        # 2. Convert spaces and special characters to underscores
-        # 3. Convert snake_case to PascalCase
-
-        # First split existing PascalCase (APIResponseData -> API_Response_Data)
+        # Split existing PascalCase before conversion (APIResponseData -> API_Response_Data)
         with_underscores = title.gsub(/([a-z])([A-Z])/, '\1_\2')
                                 .gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
 
-        # Convert spaces and special characters to underscores
-        normalized = with_underscores.gsub(/[^a-zA-Z0-9_]+/, "_")
-                                     .gsub(/^_+|_+$/, "")    # Remove leading/trailing underscores
-                                     .gsub(/_+/, "_")        # Merge consecutive underscores
+        class_name = NamingUtils.to_pascal_case(with_underscores)
 
-        # Return default if empty
-        return default if normalized.empty?
+        return default if class_name.empty?
 
-        # Convert to PascalCase
-        class_name = normalized.split("_").map(&:capitalize).join
         ClassNamePath.new([class_name])
       end
 
@@ -40,9 +29,7 @@ module Skit
         return default unless file_path
 
         basename = File.basename(file_path, ".*")
-        # Convert snake_case to PascalCase
-        class_name = basename.split("_").map(&:capitalize).join
-        ClassNamePath.new([class_name])
+        ClassNamePath.new([NamingUtils.to_pascal_case(basename)])
       end
 
       sig { returns(ClassNamePath) }
@@ -55,9 +42,7 @@ module Skit
 
       sig { params(suffix: String).returns(ClassNamePath) }
       def append(suffix)
-        # Convert suffix to PascalCase
-        pascal_suffix = suffix.split("_").map(&:capitalize).join
-        ClassNamePath.new(@parts + [pascal_suffix])
+        ClassNamePath.new(@parts + [NamingUtils.to_pascal_case(suffix)])
       end
 
       sig { returns(T.nilable(String)) }

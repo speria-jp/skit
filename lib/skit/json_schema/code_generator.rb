@@ -26,62 +26,40 @@ module Skit
         parts << 'require "sorbet-runtime"'
         parts << 'require "skit"' if const_types?
 
-        if @config.module_name
+        module_parts = @config.module_name&.split("::")
+        indent_level = module_parts&.length || 0
+
+        if module_parts
           parts << ""
-          # Start module
-          module_parts = T.must(@config.module_name).split("::")
           module_parts.each_with_index do |module_part, index|
             parts << "#{"  " * index}module #{module_part}"
           end
+        end
 
-          # Enum types first (within module)
-          @module_definition.enum_types.each do |enum_type|
-            parts << ""
-            parts << generate_enum_class(enum_type, module_parts.length)
-          end
-
-          # Const types (within module)
-          @module_definition.const_types.each do |const_type|
-            parts << ""
-            parts << generate_const_class(const_type, module_parts.length)
-          end
-
-          # Nested structs (within module)
-          @module_definition.nested_structs.each do |nested_struct|
-            parts << ""
-            parts << generate_single_struct(nested_struct, module_parts.length)
-          end
-
-          # Main struct (within module)
+        # Enum types
+        @module_definition.enum_types.each do |enum_type|
           parts << ""
-          parts << generate_single_struct(@module_definition.root_struct, module_parts.length)
+          parts << generate_enum_class(enum_type, indent_level)
+        end
 
-          # End module
-          module_parts.reverse.each_with_index do |_, index|
-            parts << "#{"  " * (module_parts.length - index - 1)}end"
-          end
-        else
-          # Enum types first
-          @module_definition.enum_types.each do |enum_type|
-            parts << ""
-            parts << generate_enum_class(enum_type)
-          end
-
-          # Const types
-          @module_definition.const_types.each do |const_type|
-            parts << ""
-            parts << generate_const_class(const_type)
-          end
-
-          # Nested structs
-          @module_definition.nested_structs.each do |nested_struct|
-            parts << ""
-            parts << generate_single_struct(nested_struct)
-          end
-
-          # Main struct
+        # Const types
+        @module_definition.const_types.each do |const_type|
           parts << ""
-          parts << generate_single_struct(@module_definition.root_struct)
+          parts << generate_const_class(const_type, indent_level)
+        end
+
+        # Nested structs
+        @module_definition.nested_structs.each do |nested_struct|
+          parts << ""
+          parts << generate_single_struct(nested_struct, indent_level)
+        end
+
+        # Main struct
+        parts << ""
+        parts << generate_single_struct(@module_definition.root_struct, indent_level)
+
+        module_parts&.reverse&.each_with_index do |_, index|
+          parts << "#{"  " * (T.must(module_parts).length - index - 1)}end"
         end
 
         parts.join("\n")
