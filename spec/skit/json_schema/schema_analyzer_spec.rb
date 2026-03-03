@@ -125,7 +125,7 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
         result = analyzer.analyze
 
         created_at_prop = result.root_struct.properties.find { |p| p.name == "created_at" }
-        expect(created_at_prop.type.to_sorbet_type).to eq("T.nilable(DateTime)")
+        expect(created_at_prop.type.to_sorbet_type).to eq("T.nilable(Time)")
 
         birthday_prop = result.root_struct.properties.find { |p| p.name == "birthday" }
         expect(birthday_prop.type.to_sorbet_type).to eq("T.nilable(Date)")

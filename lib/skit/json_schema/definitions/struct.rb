@@ -85,7 +85,7 @@ module Skit
           when PropertyType
             base_type = property_type.base_type
             # Check if it's a custom class (inheriting from T::Struct)
-            types << base_type unless %w[String Integer Float T::Boolean DateTime Date Time
+            types << base_type unless %w[String Integer Float T::Boolean Date Time
                                          T.untyped].include?(base_type)
           else
             T.absurd(property_type)

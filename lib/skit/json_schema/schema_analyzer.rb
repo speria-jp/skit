@@ -190,12 +190,10 @@ module Skit
       sig { params(schema: T::Hash[String, T.untyped]).returns(Definitions::PropertyType) }
       def build_string_type(schema)
         case schema["format"]
-        when "date-time"
-          Definitions::PropertyType.new(base_type: "DateTime")
+        when "date-time", "time"
+          Definitions::PropertyType.new(base_type: "Time")
         when "date"
           Definitions::PropertyType.new(base_type: "Date")
-        when "time"
-          Definitions::PropertyType.new(base_type: "Time")
         else
           Definitions::PropertyType.new(base_type: "String")
         end

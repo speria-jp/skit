@@ -178,7 +178,7 @@ When adding new features:
 |-------------|-------------|
 | `string` | `String` |
 | `string` (format: date) | `Date` |
-| `string` (format: date-time) | `DateTime` |
+| `string` (format: date-time) | `Time` |
 | `string` (format: time) | `Time` |
 | `integer` | `Integer` |
 | `number` | `Float` |

@@ -350,7 +350,7 @@ cart.errors[:"items.[1].name"]  # => ["can't be blank"]
 |-------------|-------------|
 | `string` | `String` |
 | `string` (format: date) | `Date` |
-| `string` (format: date-time) | `DateTime` |
+| `string` (format: date-time) | `Time` |
 | `string` (format: time) | `Time` |
 | `integer` | `Integer` |
 | `number` | `Float` |

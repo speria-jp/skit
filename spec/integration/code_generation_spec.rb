@@ -179,7 +179,7 @@ RSpec.describe "JSON Schema code generation", type: :integration do
           class Event < T::Struct
             prop :name, String
             prop :date, Date
-            prop :starts_at, T.nilable(DateTime)
+            prop :starts_at, T.nilable(Time)
             prop :time, T.nilable(Time)
           end
         end
