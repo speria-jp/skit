@@ -38,7 +38,7 @@ module Skit # rubocop:disable Style/OneClassPerFile
   # @param type [Class] The T::Struct class to deserialize to
   # @return [T::Struct] The deserialized struct instance
   # @raise [Serialization::DeserializeError] If deserialization fails
-  sig { params(hash: T.untyped, type: T.class_of(T::Struct)).returns(T::Struct) }
+  sig { params(hash: T.untyped, type: T.any(T.class_of(T::Struct), T::Types::Base)).returns(T::Struct) }
   def self.deserialize(hash, type)
     processor = Serialization.default_registry.processor_for(type)
     processor.deserialize(hash)
