@@ -8,12 +8,12 @@ module Skit
   class Attribute < ActiveModel::Type::Value
     extend T::Sig
 
-    sig { params(type_spec: T.untyped).returns(Attribute) }
+    sig { params(type_spec: T.any(T.class_of(T::Struct), T::Types::Base)).returns(Attribute) }
     def self.[](type_spec)
       new(type_spec)
     end
 
-    sig { params(type_spec: T.untyped).void }
+    sig { params(type_spec: T.any(T.class_of(T::Struct), T::Types::Base)).void }
     def initialize(type_spec)
       super()
       @type_spec = type_spec

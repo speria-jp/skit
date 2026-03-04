@@ -35,7 +35,6 @@ module Tapioca
       #   def address=(value); end
       # end
       # ~~~
-      #: [ConstantType = T.class_of(::ActiveRecord::Base)]
       class Skit < Compiler
         extend T::Sig
 
