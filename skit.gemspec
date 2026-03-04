@@ -18,7 +18,6 @@ Gem::Specification.new do |spec|
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage
-  spec.metadata["documentation_uri"] = spec.homepage
   spec.metadata["bug_tracker_uri"] = "#{spec.homepage}/issues"
   spec.metadata["rubygems_mfa_required"] = "true"
 
@@ -28,8 +27,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "activemodel", ">= 6.0"
-  spec.add_dependency "json_schemer"
-  spec.add_dependency "sorbet-runtime"
+  spec.add_dependency "json_schemer", "~> 2.0"
+  spec.add_dependency "sorbet-runtime", "~> 0.5"
 
   # Optional: for ActiveRecord integration
   # Users should add activemodel/activerecord to their own Gemfile
