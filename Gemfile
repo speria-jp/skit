@@ -8,7 +8,6 @@ group :development, :test do
   gem "activemodel", ">= 6.0", require: false
   gem "activerecord", ">= 6.0", require: false
   gem "mysql2", require: false
-  gem "openssl", require: false
   gem "pg", require: false
   gem "rake", require: false
   gem "rspec", require: false
