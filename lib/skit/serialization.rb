@@ -16,6 +16,7 @@ require_relative "serialization/processor/date"
 require_relative "serialization/processor/time"
 require_relative "serialization/processor/struct"
 require_relative "serialization/processor/simple_type"
+require_relative "serialization/processor/tuple"
 require_relative "serialization/processor/array"
 require_relative "serialization/processor/hash"
 require_relative "serialization/processor/nilable"
@@ -39,6 +40,7 @@ module Skit
       # Register processors in order of specificity (most specific first)
       registry.register(Processor::Nilable)
       registry.register(Processor::Union)
+      registry.register(Processor::Tuple)
       registry.register(Processor::Array)
       registry.register(Processor::Hash)
       registry.register(Processor::JsonSchemaConst)

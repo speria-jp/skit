@@ -312,14 +312,26 @@ module Skit
         end
       end
 
-      sig { params(schema: T::Hash[String, T.untyped], class_name_path: ClassNamePath).returns(Definitions::ArrayPropertyType) }
+      sig do
+        params(
+          schema: T::Hash[String, T.untyped],
+          class_name_path: ClassNamePath
+        ).returns(T.any(Definitions::ArrayPropertyType, Definitions::TuplePropertyType))
+      end
       def build_array_type(schema, class_name_path)
-        if schema["items"]
-          item_schema = T.cast(schema["items"], T::Hash[String, T.untyped])
-          item_type = build_property_type(item_schema, class_name_path.append("item"))
+        # Support both prefixItems (2020-12) and items-as-array (draft-04/07) for tuple validation
+        tuple_items = schema["prefixItems"] || (schema["items"].is_a?(::Array) ? schema["items"] : nil)
+
+        if tuple_items
+          item_types = tuple_items.each_with_index.map do |item_schema, index|
+            item_schema_typed = T.cast(item_schema, T::Hash[String, T.untyped])
+            build_property_type(item_schema_typed, class_name_path.append("item#{index}"))
+          end
+          Definitions::TuplePropertyType.new(item_types: item_types)
+        elsif schema["items"].is_a?(::Hash)
+          item_type = build_property_type(schema["items"], class_name_path.append("item"))
           Definitions::ArrayPropertyType.new(item_type: item_type)
         else
-          # Array of T.untyped when items is not specified
           untyped_item = Definitions::PropertyType.new(base_type: "T.untyped")
           Definitions::ArrayPropertyType.new(item_type: untyped_item)
         end

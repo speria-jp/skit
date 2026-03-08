@@ -73,6 +73,10 @@ module Skit
           case property_type
           when ArrayPropertyType
             types.concat(extract_types_from_property_type(property_type.item_type))
+          when TuplePropertyType
+            property_type.item_types.each do |item_type|
+              types.concat(extract_types_from_property_type(item_type))
+            end
           when HashPropertyType
             types.concat(extract_types_from_property_type(property_type.value_type))
           when UnionPropertyType

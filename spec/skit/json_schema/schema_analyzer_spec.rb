@@ -107,6 +107,95 @@ RSpec.describe Skit::JsonSchema::SchemaAnalyzer, type: :unit do
       end
     end
 
+    context "with tuple array schema (prefixItems)" do
+      let(:schema) do
+        {
+          "type" => "object",
+          "properties" => {
+            "point" => {
+              "type" => "array",
+              "prefixItems" => [
+                { "type" => "number" },
+                { "type" => "number" }
+              ]
+            },
+            "mixed" => {
+              "type" => "array",
+              "prefixItems" => [
+                { "type" => "string" },
+                { "type" => "integer" }
+              ]
+            }
+          },
+          "required" => %w[point]
+        }
+      end
+
+      it "converts tuple types correctly" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        point_prop = result.root_struct.properties.find { |p| p.name == "point" }
+        expect(point_prop.type.to_sorbet_type).to eq("[Float, Float]")
+
+        mixed_prop = result.root_struct.properties.find { |p| p.name == "mixed" }
+        expect(mixed_prop.type.to_sorbet_type).to eq("T.nilable([String, Integer])")
+      end
+    end
+
+    context "with tuple array schema (items as array, draft-07)" do
+      let(:schema) do
+        {
+          "$schema" => "http://json-schema.org/draft-07/schema#",
+          "type" => "object",
+          "properties" => {
+            "point" => {
+              "type" => "array",
+              "items" => [
+                { "type" => "number" },
+                { "type" => "number" }
+              ]
+            }
+          },
+          "required" => %w[point]
+        }
+      end
+
+      it "converts tuple types correctly" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        point_prop = result.root_struct.properties.find { |p| p.name == "point" }
+        expect(point_prop.type.to_sorbet_type).to eq("[Float, Float]")
+      end
+    end
+
+    context "with nested tuple array schema" do
+      let(:schema) do
+        {
+          "type" => "object",
+          "properties" => {
+            "event_range" => {
+              "type" => "array",
+              "prefixItems" => [
+                { "type" => "array", "prefixItems" => [{ "type" => "number" }, { "type" => "number" }] },
+                { "type" => "array", "prefixItems" => [{ "type" => "number" }, { "type" => "number" }] }
+              ]
+            }
+          },
+          "required" => %w[event_range]
+        }
+      end
+
+      it "converts nested tuple types correctly" do
+        analyzer = described_class.new(schema, config)
+        result = analyzer.analyze
+
+        prop = result.root_struct.properties.find { |p| p.name == "event_range" }
+        expect(prop.type.to_sorbet_type).to eq("[[Float, Float], [Float, Float]]")
+      end
+    end
+
     context "with string format types" do
       let(:schema) do
         {
